@@ -1,4 +1,4 @@
-# Docker – Quick Learning Guide
+# Docker
 
 ## Overview
 This document provides a simple and practical explanation of Docker concepts, focusing on what they do and how they function in real-world scenarios.
