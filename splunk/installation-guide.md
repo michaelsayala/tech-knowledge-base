@@ -18,41 +18,26 @@ chown -R splunk:splunk /opt/splunk
 ```
 ## 4. Disable Transparent Huge Pages (THP)
 ```
-cd /etc/init.d/
-vi disable_thp
+sudo vi /etc/systemd/system/disable-thp.service
 ```
 ```
-#!/bin/bash
-### BEGIN INIT INFO
-# Provides:          disable-thp
-# Required-Start:    $local_fs
-# Default-Start:     2 3 4 5
-### END INIT INFO
+[Unit]
+Description=Disable THP
+After=network.target
 
-case $1 in
- start)
-   if [ -d /sys/kernel/mm/transparent_hugepage ]; then
-     thp_path=/sys/kernel/mm/transparent_hugepage
-   elif [ -d /sys/kernel/mm/redhat_transparent_hugepage ]; then
-     thp_path=/sys/kernel/mm/redhat_transparent_hugepage
-   else
-     exit 0
-   fi
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c "echo never > /sys/kernel/mm/transparent_hugepage/enabled"
+ExecStart=/bin/bash -c "echo never > /sys/kernel/mm/transparent_hugepage/defrag"
+RemainAfterExit=true
 
-   echo 'never' > ${thp_path}/enabled
-   echo 'never' > ${thp_path}/defrag
-
-   if [[ $(cat ${thp_path}/khugepaged/defrag) =~ ^[0-1]+$ ]]; then
-     echo 0 > ${thp_path}/khugepaged/defrag
-   else
-     echo 'no' > ${thp_path}/khugepaged/defrag
-   fi
-   ;;
-esac
+[Install]
+WantedBy=multi-user.target
 ```
 ```
-chmod 755 disable_thp
-chkconfig --add disable_thp
+sudo systemctl daemon-reexec
+sudo systemctl enable disable-thp
+sudo systemctl start disable-thp
 ```
 ## 5. Increase System Limits (ulimit)
 Edit the limits configuration file:
