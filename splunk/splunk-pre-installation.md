@@ -88,7 +88,7 @@ Check Current Status
 cat /sys/kernel/mm/transparent_hugepage/enabled
 cat /sys/kernel/mm/transparent_hugepage/defrag
 ```
-Transparent Huge Pages can cause performance degradation and latency issues. Splunk requires THP to be disabled for stable performance.
+> Transparent Huge Pages can cause performance degradation and latency issues. Splunk requires THP to be disabled for stable performance.
 
 ## 4. Configure System Limits (ulimits)
 Check Current Limits
@@ -116,8 +116,7 @@ Verify Time Sync
 ```
 ntpstat
 ```
->
-Accurate time is critical for indexing, searching, and correlation across distributed Splunk environments.
+> Accurate time is critical for indexing, searching, and correlation across distributed Splunk environments.
 
 ## 6. Install Splunk
 
