@@ -15,11 +15,11 @@ Purpose:
 - wget: download Splunk packages
 - ntpstat: verify time synchronization
 
-### Set Hostname
+Set Hostname
 ```
 hostnamectl set-hostname <hostname>
 ```
-### Create Splunk User and Directory
+Create Splunk User and Directory
 ```
 groupadd splunk
 useradd -g splunk splunk
@@ -33,7 +33,7 @@ Splunk should not run as root
 /opt/splunk is the standard installation directory
 
 ## 2. Pre-Installation Checks
-### System Validation
+System Validation
 ```
 cat /etc/os-release
 df -kh
@@ -42,14 +42,14 @@ lscpu
 free -h
 ```
 
-### Validate Splunk User
+Validate Splunk User
 ```
 id -u splunk
 lslogins -u splunk
 ls -ld /opt/splunk
 ```
 
-### Check Required Ports
+Check Required Ports
 ```
 netstat -tuln | grep -E ':8000|:8089|:9997'
 ```
@@ -120,25 +120,25 @@ ntpstat
 
 ## 6. Install Splunk
 
-### Switch to Splunk User
+Switch to Splunk User
 ```
 sudo su - splunk
 ```
-### Download Splunk
+Download Splunk
 ```
 cd /home/splunk
 wget <SPLUNK_DOWNLOAD_URL>
 ```
-### Extract and Install
+Extract and Install
 ```
 tar -xvzf splunk-*.tgz
 sudo mv splunk /opt/
 ```
-### Start Splunk (First Time)
+Start Splunk (First Time)
 ```
 /opt/splunk/bin/splunk start --accept-license
 ```
-### Enable Splunk Boot Start
+Enable Splunk Boot Start
 ```
 sudo su
 /opt/splunk/bin/splunk enable boot-start -user splunk
