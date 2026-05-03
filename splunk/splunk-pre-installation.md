@@ -5,7 +5,7 @@ This guide provides a step-by-step process for preparing a Linux server and inst
 
 ## 1. Pre-Installation Setup
 
-### Install Required Packages
+Install Required Packages
 ```
 sudo su
 yum install -y net-tools wget ntpstat
