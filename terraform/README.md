@@ -88,19 +88,19 @@ terraform destroy
 ```
 ## Core Terraform Components
 
-Provider - Connects Terraform to cloud/platform\
-Resource - Infrastructure object\
-Variable - Reusable input\
-Output - Displays values\
-Module - Reusable Terraform code\
-State File - Tracks infrastructure
+1. Provider - Connects Terraform to cloud/platform
+2. Resource - Infrastructure object
+3. Variable - Reusable input
+4. Output - Displays values
+5. Module - Reusable Terraform code
+6. State File - Tracks infrastructure
 
 ## Important Terraform Files
 
-main.tf	Main - resources\
-variables.tf - Variables\
-outputs.tf - Outputs\
-terraform.tfstate - Infrastructure state tracking\
+1. main.tf	Main - resources
+2. variables.tf - Variables
+3. outputs.tf - Outputs
+4. terraform.tfstate - Infrastructure state tracking
 
 ## Common Terraform Commands
 ```
