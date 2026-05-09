@@ -87,6 +87,7 @@ Deletes infrastructure.
 terraform destroy
 ```
 ## Core Terraform Components
+
 Provider - Connects Terraform to cloud/platform
 Resource - Infrastructure object
 Variable - Reusable input
