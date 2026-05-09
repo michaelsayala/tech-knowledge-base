@@ -93,7 +93,7 @@ Resource - Infrastructure object\
 Variable - Reusable input\
 Output - Displays values\
 Module - Reusable Terraform code\
-State File - Tracks infrastructure\
+State File - Tracks infrastructure
 
 ## Important Terraform Files
 
