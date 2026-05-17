@@ -131,8 +131,7 @@ wget <SPLUNK_DOWNLOAD_URL>
 ```
 Extract and Install
 ```
-tar -xvzf splunk-*.tgz
-sudo mv splunk /opt/
+tar -xvzf splunk-*.tgz -C /opt
 ```
 Start Splunk (First Time)
 ```
