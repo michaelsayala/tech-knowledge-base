@@ -21,8 +21,8 @@ hostnamectl set-hostname <hostname>
 ```
 Create Splunk User and Directory
 ```
+useradd splunk
 groupadd splunk
-useradd -g splunk splunk
 
 mkdir -p /opt/splunk
 chown -R splunk:splunk /opt/splunk
