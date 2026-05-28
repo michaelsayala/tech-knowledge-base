@@ -42,6 +42,6 @@ Playbook
       user:
         name: splunk
 ```
-Play: Installs Splunk Enterprise on the splunk hosts.
-Task: Creates a user named splunk using the user module.
-Privilege escalation: become: yes ensures the task runs with elevated privileges.
+- Play: Installs Splunk Enterprise on the splunk hosts.
+- Task: Creates a user named splunk using the user module.
+- Privilege escalation: become: yes ensures the task runs with elevated privileges.
