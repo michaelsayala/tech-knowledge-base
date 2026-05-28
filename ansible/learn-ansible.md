@@ -1,10 +1,10 @@
 # Ansible YAML Basics
 - Basic structure of an Ansible playbook.
 
-name - Human-readable description.
-hosts - Defines which servers the playbook targets.
-become - Privilege escalation (similar to sudo).
-tasks - A list of actions Ansible executes.
+1. name - Human-readable description.
+2. hosts - Defines which servers the playbook targets.
+3. become - Privilege escalation (similar to sudo).
+4. tasks - A list of actions Ansible executes.
 
 Ansible YAML file hierarchy
 ```
