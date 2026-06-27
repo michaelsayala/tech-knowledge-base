@@ -65,61 +65,32 @@ https://developers.redhat.com/
 ## Post-Installation Configuration
 
 ### System Update
-
+```
 sudo dnf update -y
 sudo reboot
-
+```
 ---
 
 ### Install Required Packages
-
+```
 sudo dnf install -y \
 wget curl vim net-tools bind-utils unzip tar \
 tcpdump rsync git bash-completion chrony
-
+```
 ---
 
 ### Enable Time Synchronization
-
+```
 sudo systemctl enable chronyd
 sudo systemctl start chronyd
-
+```
 ---
 
 ### Enable SSH Service
-
+```
 sudo systemctl enable sshd
 sudo systemctl start sshd
-
----
-
-## VirtualBox Guest Additions
-
-Install required build dependencies:
-
-sudo dnf install -y gcc make perl kernel-devel kernel-headers
-
-Mount Guest Additions ISO from VirtualBox menu and run:
-
-sudo mount /dev/cdrom /mnt
-sudo /mnt/VBoxLinuxAdditions.run
-
-Reboot after installation:
-
-sudo reboot
-
----
-
-## Optional VirtualBox Settings
-
-Enable improved usability:
-
-- Shared Clipboard: Bidirectional
-- Drag and Drop: Bidirectional
-
-Location:
-Settings → General → Advanced
-
+```
 ---
 
 ## Template Cleanup (Before Cloning)
