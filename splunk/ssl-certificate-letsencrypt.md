@@ -34,43 +34,12 @@ Certificate:
 
 * *.michaelsayala.com
 * michaelsayala.com
-
----
-
-# Step 1 - Install  Snap
-
-Add EPEL to RHEL 9
-```bash
-sudo dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
-sudo dnf upgrade
-```
-Installing snapd
-```
-sudo yum install snapd
-```
-snap communication socket needs to be enabled:
-```
-sudo systemctl enable --now snapd.socket
-```
-To enable classic snap support, enter the following to create a symbolic link between /var/lib/snapd/snap and /snap:
-```
-sudo ln -s /var/lib/snapd/snap /snap
-```
-Reboot the server
-```
-reboot
-```
+  
 ---
 
 # Step 2 - Install Certbot
 ```
-sudo snap install --classic certbot
-```
-```
-sudo ln -s /snap/bin/certbot /usr/local/bin/certbot
-```
-```
-sudo certbot certonly --standalone
+sudo dnf install -y certbot
 ```
 
 # Step 3 - Install the Cloudflare DNS Plugin
@@ -80,19 +49,6 @@ Install the Cloudflare DNS plugin for Certbot.
 ```bash
 sudo dnf install -y python3-certbot-dns-cloudflare
 ```
-
-Verify that Certbot recognizes the plugin.
-
-```bash
-certbot plugins
-```
-
-Expected output should include:
-
-```text
-dns-cloudflare
-```
-
 ---
 
 # Step 3 - Create a Cloudflare API Token
