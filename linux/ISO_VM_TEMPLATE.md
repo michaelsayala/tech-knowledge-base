@@ -5,7 +5,7 @@ A standardized **RHEL 9 base VM template** for Oracle VirtualBox, designed to qu
 ---
 ## Overview
 
-This template provides a reusable RHEL 9 base image that can be cloned to build multiple lab servers including:
+This template provides a reusable RHEL 9 base image that can be cloned to build multiple lab servers.
 
 The goal is to eliminate repetitive OS installation and ensure consistency across all lab nodes.
 
