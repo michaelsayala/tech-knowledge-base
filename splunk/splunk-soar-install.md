@@ -365,6 +365,7 @@ cd /opt/splunk-soar
 ./soar-prepare-system --splunk-soar-home /opt/phantom
 
 # 9. Install Splunk SOAR
+# Run this as phantom user
 ./soar-install --splunk-soar-home /opt/phantom
 ```
 
