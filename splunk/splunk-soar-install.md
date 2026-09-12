@@ -157,7 +157,7 @@ ls -lh /tmp/splunk_soar-unpriv-*.tgz
 Extract the Splunk SOAR package into `/opt`:
 
 ```bash
-sudo tar -xzf splunk_soar-unpriv-8.7.0.232-281d350a-el9-x86_64.tgz -C /opt
+sudo tar -xvzf splunk_soar-unpriv-8.7.0.232-281d350a-el9-x86_64.tgz -C /opt/
 ```
 
 Check the contents of `/opt`:
