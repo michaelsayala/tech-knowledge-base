@@ -224,7 +224,17 @@ If the script reports missing dependencies or configuration requirements, resolv
 
 ## 9. Install Splunk SOAR
 
-After the system preparation completes successfully, run the Splunk SOAR installer as the **`phantom` user**.
+After the system preparation completes successfully, update the ownership of the Splunk SOAR installation directory.
+
+Run the following command as **root**:
+
+```bash
+chown -R phantom:phantom /opt/
+```
+
+This ensures that the `phantom` user has ownership of the required files and directories under `/opt`.
+
+### Switch to the `phantom` User
 
 Switch to the `phantom` user:
 
@@ -260,7 +270,8 @@ Follow the prompts displayed by the installer.
 
 Allow the installation to complete before moving to the verification steps.
 
-> **Important:** The `soar-install` command must be run as the `phantom` user. Do not run this command as `root`.
+> **Important:** The `chown` command must be run as `root`, while the `soar-install` command must be run as the `phantom` user.
+
 
 
 ---
