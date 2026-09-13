@@ -36,3 +36,21 @@ ansible.builtin.user:
   password:      # What password/hash should the user have?
   state:         # Should the user exist or not?
 ```
+
+## Directory
+```
+ansible.builtin.file:
+  path:       # What directory?
+  state:      # Should it exist or not?
+  owner:      # Who should own the directory?
+  group:      # What group should own the directory?
+  mode:       # What permissions should the directory have?
+```
+```
+ansible.builtin.file:
+  path: /opt/splunk
+  state: directory
+  owner: splunk
+  group: splunk
+  mode: "0755"
+```
