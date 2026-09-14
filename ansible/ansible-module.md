@@ -184,3 +184,29 @@ ansible.builtin.shell:
   ansible.builtin.shell:
     cmd: df -h /opt | tail -n 1
 ```
+
+## Stat
+```
+ansible.builtin.stat:
+  path:       # File or directory to check
+```
+```
+- name: OS - Check Splunk SOAR installation directory
+  ansible.builtin.stat:
+    path: /opt/phantom
+  register: splunk_soar_dir
+```
+## Assert
+```
+ansible.builtin.assert:
+  that:       # Conditions that must be true
+  fail_msg:   # Message if validation fails
+  success_msg: # Message if validation succeeds
+```
+```
+- name: OS - Verify Splunk SOAR directory exists
+  ansible.builtin.assert:
+    that:
+      - splunk_soar_dir.stat.exists
+    fail_msg: "Splunk SOAR directory does not exist"
+```
