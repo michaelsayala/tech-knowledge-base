@@ -80,11 +80,14 @@ ansible.builtin.yum:
 
 ```
 ansible.builtin.copy:
-  src:        # Source file on the Ansible controller
-  dest:       # Destination path on the Linux server
-  owner:      # Who should own the file?
-  group:      # What group should own the file?
-  mode:       # What permissions should the file have?
+  src:             # Local source file
+  dest:            # Remote destination
+  owner:           # File owner
+  group:           # File group
+  mode:            # File permissions
+  backup:          # Create backup before overwriting
+  force:           # Overwrite existing file
+  remote_src:      # Source file is already on remote server
 ```
 ```
 ansible.builtin.copy:
