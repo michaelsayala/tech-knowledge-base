@@ -130,3 +130,29 @@ ansible.builtin.get_url:
   force:           # Force download if needed
   timeout:         # Download timeout
 ```
+
+## Unarchive
+```
+ansible.builtin.unarchive:
+  src:         # Archive file to extract
+  dest:        # Directory where files should be extracted
+  remote_src:  # Is the archive already on the Linux server?
+  owner:       # Who should own extracted files?
+  group:       # What group should own extracted files?
+  mode:        # Permissions for extracted files
+```
+```
+ansible.builtin.unarchive:
+  src: application.tar.gz
+  dest: /opt/application
+```
+```
+ansible.builtin.unarchive:
+  src:          # Archive source
+  dest:         # Extraction directory
+  remote_src:   # Source is on remote server?
+  owner:        # Owner of extracted files
+  group:        # Group of extracted files
+  mode:         # Permissions
+  creates:      # Skip extraction if this file already exists
+```
