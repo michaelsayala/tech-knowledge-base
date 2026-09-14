@@ -71,7 +71,7 @@ ansible.builtin.yum:
 ```
 ```
 ansible.builtin.yum:
-    name:
-      - wget
-    state: present
+  name:
+    - wget
+  state: present
 ```
