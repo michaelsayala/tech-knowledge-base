@@ -75,3 +75,22 @@ ansible.builtin.yum:
     - wget
   state: present
 ```
+
+## Copy
+
+```
+ansible.builtin.copy:
+  src:        # Source file on the Ansible controller
+  dest:       # Destination path on the Linux server
+  owner:      # Who should own the file?
+  group:      # What group should own the file?
+  mode:       # What permissions should the file have?
+```
+```
+ansible.builtin.copy:
+  src: files/example.conf
+  dest: /etc/example.conf
+  owner: root
+  group: root
+  mode: "0644"
+```
