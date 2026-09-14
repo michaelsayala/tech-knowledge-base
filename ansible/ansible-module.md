@@ -1,12 +1,5 @@
 # Ansible Module
 
-## Common state values
-```
-state: present    # Make sure package is installed
-state: absent     # Make sure package is removed
-state: latest     # Make sure latest version is installed
-```
-
 ## Group
 ```
 ansible.builtin.group:
@@ -63,7 +56,6 @@ ansible.builtin.file:
 ```
 
 ## YUM, DNF, APT
-
 ```
 ansible.builtin.yum:
   name:     # What package?
@@ -75,9 +67,29 @@ ansible.builtin.yum:
     - wget
   state: present
 ```
+```
+state: present    # Make sure package is installed
+state: absent     # Make sure package is removed
+state: latest     # Make sure latest version is installed
+```
 
 ## Copy
-
+```
+ansible.builtin.copy:
+  src:        # Source file on the Ansible controller
+  dest:       # Destination path on the Linux server
+  owner:      # Who should own the file?
+  group:      # What group should own the file?
+  mode:       # What permissions should the file have?
+```
+```
+ansible.builtin.copy:
+  src: files/example.conf
+  dest: /etc/example.conf
+  owner: root
+  group: root
+  mode: "0644"
+```
 ```
 ansible.builtin.copy:
   src:             # Local source file
@@ -89,11 +101,32 @@ ansible.builtin.copy:
   force:           # Overwrite existing file
   remote_src:      # Source file is already on remote server
 ```
+## Download
+
 ```
-ansible.builtin.copy:
-  src: files/example.conf
-  dest: /etc/example.conf
+ansible.builtin.get_url:
+  url:        # URL of the file to download
+  dest:       # Where to save the file
+  owner:      # Who should own the file?
+  group:      # What group should own the file?
+  mode:       # What permissions should the file have?
+```
+```
+ansible.builtin.get_url:
+  url: https://example.com/application.tar.gz
+  dest: /opt/application.tar.gz
   owner: root
   group: root
   mode: "0644"
+```
+```
+ansible.builtin.get_url:
+  url:             # Download URL
+  dest:            # Destination file
+  owner:           # File owner
+  group:           # File group
+  mode:            # File permissions
+  checksum:        # Verify downloaded file
+  force:           # Force download if needed
+  timeout:         # Download timeout
 ```
