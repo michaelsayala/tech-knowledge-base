@@ -156,3 +156,31 @@ ansible.builtin.unarchive:
   mode:         # Permissions
   creates:      # Skip extraction if this file already exists
 ```
+
+## Command
+```
+ansible.builtin.command:
+  cmd:       # What command should be executed?
+  chdir:     # Which directory should the command run from?
+  creates:   # Skip command if this file already exists
+  removes:   # Skip command if this file does not exist
+```
+```
+ansible.builtin.command:
+  cmd: ./soar-install
+  chdir: /opt/phantom
+```
+
+## Shell
+```
+ansible.builtin.shell:
+  cmd:       # Shell command
+  chdir:     # Working directory
+  creates:   # Skip if file exists
+  removes:   # Skip if file doesn't exist
+```
+```
+- name: OS - Check disk space
+  ansible.builtin.shell:
+    cmd: df -h /opt | tail -n 1
+```
