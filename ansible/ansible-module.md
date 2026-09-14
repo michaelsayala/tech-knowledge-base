@@ -1,5 +1,12 @@
 # Ansible Module
 
+## Common state values
+```
+state: present    # Make sure package is installed
+state: absent     # Make sure package is removed
+state: latest     # Make sure latest version is installed
+```
+
 ## Group
 ```
 ansible.builtin.group:
@@ -53,4 +60,18 @@ ansible.builtin.file:
   owner: splunk
   group: splunk
   mode: "0755"
+```
+
+## YUM, DNF, APT
+
+```
+ansible.builtin.yum:
+  name:     # What package?
+  state:    # Should it be installed or removed?
+```
+```
+ansible.builtin.yum:
+    name:
+      - wget
+    state: present
 ```
