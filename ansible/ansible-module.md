@@ -282,3 +282,35 @@ ansible.builtin.template:
   backup:           # Backup existing file before changing
   validate:         # Validate configuration before replacing
 ```
+Blockinfile
+```
+ansible.builtin.blockinfile:
+  path:         # Which file should be modified?
+  block:        # What block of text should be added?
+  marker:       # What markers identify the block?
+  state:        # Should the block exist or be removed?
+  owner:        # Who should own the file?
+  group:        # What group should own the file?
+  mode:         # What permissions should the file have?
+```
+```
+- name: OS - Configure custom settings
+  ansible.builtin.blockinfile:
+    path: /etc/example.conf
+    block: |
+      setting1=value1
+      setting2=value2
+      setting3=value3
+    marker: "# {mark} ANSIBLE MANAGED BLOCK"
+    state: present
+    owner: root
+    group: root
+    mode: "0644"
+```
+```
+# BEGIN ANSIBLE MANAGED BLOCK
+setting1=value1
+setting2=value2
+setting3=value3
+# END ANSIBLE MANAGED BLOCK
+```
