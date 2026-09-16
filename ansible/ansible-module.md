@@ -210,3 +210,46 @@ ansible.builtin.assert:
       - splunk_soar_dir.stat.exists
     fail_msg: "Splunk SOAR directory does not exist"
 ```
+
+## Systemd Service
+```
+ansible.builtin.systemd_service:
+  name:        # What service?
+  state:       # What should the service be doing?
+  enabled:     # Should it start automatically at boot?
+```
+```
+ansible.builtin.systemd_service:
+  name: firewalld
+  state: started
+  enabled: true
+```
+```
+state: started     # Start the service
+state: stopped     # Stop the service
+state: restarted   # Restart the service
+state: reloaded    # Reload configuration
+```
+```
+enabled: true      # Start automatically at boot
+enabled: false     # Do not start automatically at boot
+```
+
+## Firewalld
+```
+ansible.posix.firewalld:
+  service:      # Which predefined service?
+  port:         # Which port/protocol?
+  zone:         # Which firewall zone?
+  state:        # add / remove
+  permanent:    # Persist after reboot?
+  immediate:    # Apply to the running firewall now?
+```
+```
+- name: Firewall - Allow SSH
+  ansible.posix.firewalld:
+    service: ssh
+    state: enabled
+    permanent: true
+    immediate: true
+```
