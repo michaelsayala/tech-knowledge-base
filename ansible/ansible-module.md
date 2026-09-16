@@ -253,3 +253,32 @@ ansible.posix.firewalld:
     permanent: true
     immediate: true
 ```
+
+## Template
+```
+ansible.builtin.template:
+  src:        # Jinja2 template on the Ansible controller
+  dest:       # Destination file on the Linux server
+  owner:      # Who should own the file?
+  group:      # What group should own the file?
+  mode:       # What permissions should the file have?
+```
+```
+- name: OS - Configure application
+  ansible.builtin.template:
+    src: application.conf.j2
+    dest: /etc/application.conf
+    owner: root
+    group: root
+    mode: "0644"
+```
+```
+ansible.builtin.template:
+  src:              # Source .j2 template
+  dest:             # Destination
+  owner:            # File owner
+  group:            # File group
+  mode:             # File permissions
+  backup:           # Backup existing file before changing
+  validate:         # Validate configuration before replacing
+```
