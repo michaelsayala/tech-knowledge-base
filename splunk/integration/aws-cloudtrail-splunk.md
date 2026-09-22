@@ -125,6 +125,34 @@ sqs:DeleteMessage
 sqs:ChangeMessageVisibility
 ```
 
+### JSON Policy
+https://splunk.github.io/splunk-add-on-for-amazon-web-services/CloudTrail/
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "sqs:GetQueueAttributes",
+                "sqs:ListQueues",
+                "sqs:ReceiveMessage",
+                "sqs:GetQueueUrl",
+                "sqs:DeleteMessage",
+                "s3:Get*",
+                "s3:List*",
+                "s3:Delete*"
+            ],
+            "Resource": [
+               "*"
+            ]
+        }
+    ]
+}
+```
+
+
+
 Use an IAM user or IAM role dedicated to Splunk.
 
 ---
