@@ -1,27 +1,16 @@
-# Terraform 101
+# Terraform
 
-## Purpose
+> Foundational technical documentation covering Terraform purpose, components, architecture, usage, configuration, dependencies, and licensing.
 
-Terraform is an **Infrastructure as Code (IaC)** tool used to define, provision, configure, and manage infrastructure through declarative configuration files.
+---
 
-Instead of manually creating infrastructure through a cloud provider's console, Terraform allows infrastructure to be described as code.
+# 1. Purpose
 
-For example:
+## 1.1 What is Terraform?
 
-```text
-Terraform Configuration
-        |
-        v
-   Terraform Plan
-        |
-        v
-   Terraform Apply
-        |
-        v
-Cloud Infrastructure
-```
+Terraform is an **Infrastructure as Code (IaC)** tool used to **provision, configure, manage, and automate infrastructure** using declarative configuration files.
 
-Terraform is commonly used to manage:
+Terraform can be used to manage:
 
 * Cloud infrastructure
 * Virtual machines
@@ -29,175 +18,1453 @@ Terraform is commonly used to manage:
 * Subnets
 * Security groups
 * Load balancers
+* Storage
 * Databases
 * DNS
-* Storage
-* IAM resources
 * Kubernetes resources
 * SaaS platforms
-* Monitoring infrastructure
-* Security infrastructure
+* Monitoring resources
+* Identity resources
+* Infrastructure services
 
-### Infrastructure as Code
-
-Traditional infrastructure deployment:
-
-```text
-Administrator
-     |
-     +--> AWS Console
-     +--> Create VPC
-     +--> Create Subnet
-     +--> Create Security Group
-     +--> Create EC2
-     +--> Configure networking
-     +--> Repeat manually
-```
-
-Terraform:
+Instead of manually creating infrastructure:
 
 ```text
-Terraform Code
-      |
-      v
-terraform plan
-      |
-      v
-terraform apply
-      |
-      v
-AWS Infrastructure
+AWS Console
+    │
+    ├── Create VPC
+    ├── Create Subnet
+    ├── Create Security Group
+    ├── Create EC2
+    ├── Configure Storage
+    └── Configure Networking
 ```
 
-The infrastructure becomes:
-
-* Repeatable
-* Version controlled
-* Reviewable
-* Reusable
-* Automated
-* Consistent
-
----
-
-# Core Terraform Concepts
-
-Terraform's main concepts can be summarized as:
+Terraform allows infrastructure to be defined as code:
 
 ```text
-Configuration
-     |
-     v
-Provider
-     |
-     v
-Resources
-     |
-     v
-Variables
-     |
-     v
-Modules
-     |
-     v
-State
-     |
-     v
-Plan
-     |
-     v
-Apply
-```
-
-The most important concepts to understand are:
-
-| Concept        | Purpose                                         |
-| -------------- | ----------------------------------------------- |
-| Terraform      | IaC tool                                        |
-| HCL            | Configuration language                          |
-| Provider       | Connects Terraform to an API/platform           |
-| Resource       | Infrastructure object Terraform manages         |
-| Data Source    | Reads existing information                      |
-| Variable       | Input to Terraform configuration                |
-| Local          | Reusable calculated value                       |
-| Output         | Exposes information after deployment            |
-| Module         | Reusable Terraform configuration                |
-| State          | Records Terraform's knowledge of infrastructure |
-| Backend        | Stores Terraform state                          |
-| Plan           | Shows proposed changes                          |
-| Apply          | Executes changes                                |
-| Destroy        | Removes managed infrastructure                  |
-| Workspace      | Separate state/configuration context            |
-| Provider Alias | Allows multiple provider configurations         |
-
----
-
-# Components
-
-## 1. Terraform CLI
-
-The Terraform CLI is the primary interface used to interact with Terraform.
-
-Common commands:
-
-```bash
-terraform init
-terraform validate
-terraform fmt
-terraform plan
-terraform apply
-terraform destroy
-terraform show
-terraform output
-terraform state
-```
-
-Typical workflow:
-
-```text
-Write Code
-   |
-   v
-terraform fmt
-   |
-   v
-terraform init
-   |
-   v
-terraform validate
-   |
-   v
-terraform plan
-   |
-   v
-terraform apply
+              Terraform
+                  │
+          ┌───────┼────────┐
+          ▼       ▼        ▼
+         VPC    Subnet    EC2
+          │       │        │
+          └───────┼────────┘
+                  ▼
+           Infrastructure
 ```
 
 ---
 
-# 2. Terraform Configuration
+## 1.2 Infrastructure Automation Problem
 
-Terraform configuration files normally use the `.tf` extension.
+Without Infrastructure as Code, infrastructure can become difficult to reproduce and maintain.
 
 Example:
 
 ```text
-terraform/
-├── main.tf
-├── variables.tf
-├── outputs.tf
-├── providers.tf
-├── versions.tf
-└── terraform.tfvars
+AWS Environment
+
+VPC
+ ├── Created manually
+ ├── Unknown configuration
+ ├── Unknown dependencies
+ └── Difficult to reproduce
+
+EC2
+ ├── Manually configured
+ ├── Different instance settings
+ └── Configuration drift
 ```
 
-Terraform automatically loads `.tf` files in the working directory.
+Terraform allows the infrastructure configuration to be defined in code:
+
+```text
+Infrastructure Code
+        │
+        ▼
+    Terraform
+        │
+        ▼
+   Cloud Provider
+        │
+        ▼
+ Consistent Infrastructure
+```
 
 ---
 
-# 3. HCL
+## 1.3 Infrastructure as Code
 
-Terraform primarily uses **HashiCorp Configuration Language (HCL)**.
+Infrastructure as Code means defining infrastructure using machine-readable configuration files.
+
+Example:
+
+```hcl
+resource "aws_instance" "splunk" {
+  ami           = var.ami_id
+  instance_type = "t3.medium"
+
+  tags = {
+    Name = "splunk-server"
+  }
+}
+```
+
+Instead of manually creating the server, Terraform interprets the configuration and creates the required infrastructure.
+
+The basic concept is:
+
+```text
+Desired Infrastructure
+        ↓
+    Terraform
+        ↓
+Cloud Provider
+        ↓
+Actual Infrastructure
+```
+
+---
+
+## 1.4 Provisioning
+
+Terraform is commonly used to provision infrastructure.
+
+Example:
+
+```text
+Terraform
+    │
+    ├── Create VPC
+    ├── Create Subnet
+    ├── Create Security Group
+    ├── Create EC2 Instances
+    ├── Create Storage
+    └── Configure Networking
+    │
+    ▼
+Infrastructure Ready
+```
+
+For an AWS Splunk environment:
+
+```text
+Terraform
+    │
+    ├── VPC
+    ├── Subnet
+    ├── Security Groups
+    ├── EC2 Instances
+    ├── IAM
+    └── Networking
+         │
+         ▼
+    Splunk Infrastructure
+```
+
+---
+
+## 1.5 Declarative Configuration
+
+Terraform uses a **declarative approach**.
+
+You define **what the infrastructure should look like**, rather than describing every individual command required to create it.
+
+Example:
+
+```hcl
+resource "aws_instance" "web" {
+  ami           = var.ami_id
+  instance_type = "t3.medium"
+}
+```
+
+You do not normally specify:
+
+```text
+1. Open AWS Console
+2. Click EC2
+3. Click Launch Instance
+4. Select AMI
+5. Select Instance Type
+6. Configure Network
+7. Configure Storage
+8. Launch
+```
+
+Instead:
+
+```text
+Desired State
+      │
+      ▼
+   Terraform
+      │
+      ▼
+Terraform Provider
+      │
+      ▼
+    AWS API
+      │
+      ▼
+Infrastructure
+```
+
+---
+
+## 1.6 Infrastructure Lifecycle
+
+Terraform can manage the infrastructure lifecycle.
+
+```text
+                Terraform
+                    │
+        ┌───────────┼───────────┐
+        ▼           ▼           ▼
+      Create      Update       Destroy
+        │           │           │
+        ▼           ▼           ▼
+ Infrastructure  Changes    Infrastructure
+```
+
+Typical lifecycle:
+
+```text
+DEFINE
+   ↓
+PLAN
+   ↓
+APPLY
+   ↓
+MANAGE
+   ↓
+UPDATE
+   ↓
+DESTROY
+```
+
+---
+
+## 1.7 Common Use Cases
+
+| Use Case                       | Description                                           |
+| ------------------------------ | ----------------------------------------------------- |
+| Infrastructure Provisioning    | Create cloud and infrastructure resources             |
+| Cloud Automation               | Automate AWS, Azure, GCP, and other platforms         |
+| Network Provisioning           | Create VPCs, subnets, routes, and security controls   |
+| Server Provisioning            | Create virtual machines and instances                 |
+| Storage Provisioning           | Create disks, buckets, and storage resources          |
+| Database Provisioning          | Create managed database infrastructure                |
+| IAM Automation                 | Manage identities and permissions                     |
+| Kubernetes                     | Provision and manage Kubernetes infrastructure        |
+| Infrastructure Standardization | Maintain consistent environments                      |
+| Disaster Recovery              | Recreate infrastructure from code                     |
+| Environment Management         | Create development, test, and production environments |
+| Infrastructure Lifecycle       | Create, update, and destroy infrastructure            |
+
+---
+
+# 2. Components
+
+The major Terraform concepts are:
+
+```text
+Terraform
+│
+├── Terraform CLI
+├── Configuration
+├── HCL
+├── Providers
+├── Resources
+├── Data Sources
+├── Variables
+├── Locals
+├── Outputs
+├── Modules
+├── State
+├── Backend
+├── Dependencies
+├── Plan
+└── Apply
+```
+
+---
+
+# 2.1 Terraform CLI
+
+The Terraform CLI is the command-line interface used to interact with Terraform.
+
+Common commands include:
+
+```bash
+terraform init
+terraform fmt
+terraform validate
+terraform plan
+terraform apply
+terraform destroy
+```
+
+The CLI is used to:
+
+```text
+Initialize
+   ↓
+Validate
+   ↓
+Plan
+   ↓
+Apply
+   ↓
+Manage
+   ↓
+Destroy
+```
+
+---
+
+# 2.2 Terraform Configuration
+
+Terraform configuration files define the desired infrastructure.
+
+Terraform configuration files normally use:
+
+```text
+.tf
+```
+
+Example:
+
+```text
+main.tf
+variables.tf
+outputs.tf
+providers.tf
+```
+
+Example:
+
+```hcl
+resource "aws_instance" "splunk" {
+  ami           = var.ami_id
+  instance_type = var.instance_type
+}
+```
+
+---
+
+# 2.3 HCL
+
+Terraform commonly uses **HashiCorp Configuration Language (HCL)**.
+
+Example:
+
+```hcl
+variable "instance_type" {
+  type    = string
+  default = "t3.medium"
+}
+```
+
+HCL is designed to be readable by humans while remaining machine-processable.
+
+---
+
+# 2.4 Providers
+
+Providers allow Terraform to communicate with external APIs.
+
+Examples include providers for:
+
+```text
+AWS
+Azure
+Google Cloud
+Kubernetes
+GitHub
+Cloudflare
+Datadog
+```
+
+Example:
+
+```hcl
+provider "aws" {
+  region = "ca-central-1"
+}
+```
+
+The provider acts as the connection between Terraform and the external platform.
+
+```text
+Terraform
+    │
+    ▼
+ Provider
+    │
+    ▼
+ External API
+    │
+    ▼
+Infrastructure
+```
+
+---
+
+# 2.5 Resources
+
+Resources represent infrastructure objects that Terraform manages.
+
+Example:
+
+```hcl
+resource "aws_instance" "splunk" {
+  ami           = var.ami_id
+  instance_type = "t3.medium"
+}
+```
+
+The resource consists of:
+
+```text
+Resource
+│
+├── Provider
+├── Resource Type
+├── Resource Name
+└── Arguments
+```
+
+Example:
+
+```text
+aws_instance
+      │
+      └── splunk
+```
+
+---
+
+# 2.6 Data Sources
+
+Data sources allow Terraform to retrieve information that already exists.
+
+Example:
+
+```hcl
+data "aws_ami" "rhel" {
+  most_recent = true
+
+  owners = ["amazon"]
+}
+```
+
+The difference is:
+
+```text
+Resource
+   ↓
+Create / Manage infrastructure
+
+Data Source
+   ↓
+Read existing information
+```
+
+---
+
+# 2.7 Variables
+
+Variables allow Terraform configurations to accept configurable values.
+
+Example:
+
+```hcl
+variable "region" {
+  type    = string
+  default = "ca-central-1"
+}
+
+variable "instance_type" {
+  type    = string
+  default = "t3.medium"
+}
+```
+
+Variables help avoid hardcoding values throughout the configuration.
+
+---
+
+# 2.8 Locals
+
+Locals define reusable values within a Terraform configuration.
+
+Example:
+
+```hcl
+locals {
+  environment = "lab"
+
+  common_tags = {
+    Environment = "lab"
+    Project     = "splunk"
+  }
+}
+```
+
+Locals are useful for:
+
+```text
+Naming
+Tags
+Calculated Values
+Reusable Expressions
+```
+
+---
+
+# 2.9 Outputs
+
+Outputs expose information from Terraform.
+
+Example:
+
+```hcl
+output "splunk_instance_ip" {
+  value = aws_instance.splunk.public_ip
+}
+```
+
+After applying:
+
+```bash
+terraform output
+```
+
+Terraform can display:
+
+```text
+splunk_instance_ip = "203.0.113.10"
+```
+
+Outputs are commonly used to expose:
+
+```text
+IP Addresses
+DNS Names
+Instance IDs
+Resource IDs
+Network Information
+```
+
+---
+
+# 2.10 Modules
+
+Modules provide reusable Terraform configurations.
+
+Example:
+
+```text
+modules/
+└── splunk-instance/
+    ├── main.tf
+    ├── variables.tf
+    └── outputs.tf
+```
+
+A module can be reused:
+
+```text
+Root Module
+    │
+    ├── Splunk Indexer Module
+    ├── Splunk Search Head Module
+    ├── Splunk Forwarder Module
+    └── Network Module
+```
+
+Modules help reduce duplicated configuration.
+
+---
+
+# 2.11 State
+
+Terraform state records information about infrastructure managed by Terraform.
+
+Example:
+
+```text
+terraform.tfstate
+```
+
+Conceptually:
+
+```text
+Terraform Configuration
+        │
+        ▼
+      State
+        │
+        ▼
+Actual Infrastructure
+```
+
+Terraform uses state to understand:
+
+```text
+What Terraform manages
+What resources exist
+Resource IDs
+Dependencies
+Current attributes
+Infrastructure relationships
+```
+
+State is an important part of Terraform's operation.
+
+---
+
+# 2.12 Backend
+
+A backend determines where Terraform state is stored.
+
+Example:
+
+```text
+Local Backend
+      │
+      ▼
+terraform.tfstate
+```
+
+Remote backend:
+
+```text
+Terraform
+    │
+    ▼
+ Remote Backend
+    │
+    ▼
+Shared State
+```
+
+Remote state is commonly used for team environments.
+
+---
+
+# 2.13 Dependency Graph
+
+Terraform builds a dependency graph to determine resource relationships and execution order.
+
+Example:
+
+```text
+VPC
+ │
+ ▼
+Subnet
+ │
+ ▼
+Security Group
+ │
+ ▼
+EC2 Instance
+```
+
+Terraform can determine that the EC2 instance depends on other resources.
+
+This allows Terraform to create resources in the appropriate order.
+
+---
+
+# 2.14 Plan
+
+`terraform plan` creates an execution plan.
+
+Example:
+
+```bash
+terraform plan
+```
+
+Terraform compares:
+
+```text
+Configuration
+     │
+     ▼
+   State
+     │
+     ▼
+Actual Infrastructure
+```
+
+It then determines the required changes.
+
+Example:
+
+```text
++ create
+~ update
+- destroy
+-/+ replace
+```
+
+---
+
+# 2.15 Apply
+
+`terraform apply` applies the planned changes.
+
+Example:
+
+```bash
+terraform apply
+```
+
+The general workflow is:
+
+```text
+Configuration
+      │
+      ▼
+terraform plan
+      │
+      ▼
+Execution Plan
+      │
+      ▼
+terraform apply
+      │
+      ▼
+Infrastructure
+```
+
+---
+
+# 3. Architecture
+
+## 3.1 Basic Architecture
+
+Terraform commonly operates between configuration files and infrastructure APIs.
+
+```text
+                 Terraform
+                     │
+                     ▼
+              Terraform Provider
+                     │
+                     ▼
+                Cloud API
+                     │
+          ┌──────────┼──────────┐
+          ▼          ▼          ▼
+         VPC        EC2       Storage
+```
+
+---
+
+# 3.2 Terraform Local Architecture
+
+A basic Terraform project can look like:
+
+```text
+Terraform Project
+│
+├── Configuration
+│
+├── Terraform CLI
+│
+├── Provider
+│
+├── State
+│
+└── Backend
+```
+
+Execution:
+
+```text
+Terraform Configuration
+          │
+          ▼
+      Terraform CLI
+          │
+          ▼
+        Provider
+          │
+          ▼
+       Cloud API
+          │
+          ▼
+     Infrastructure
+```
+
+---
+
+# 3.3 AWS Architecture
+
+Terraform can provision AWS infrastructure.
+
+Example:
+
+```text
+                    Terraform
+                        │
+                        ▼
+                    AWS Provider
+                        │
+                        ▼
+                     AWS API
+                        │
+          ┌─────────────┼─────────────┐
+          ▼             ▼             ▼
+         VPC          Security       EC2
+                       Groups
+                        │
+                        ▼
+                   Splunk Servers
+```
+
+---
+
+# 3.4 Terraform Execution Model
+
+A simplified Terraform execution process:
+
+```text
+Terraform Configuration
+          │
+          ▼
+      terraform init
+          │
+          ▼
+      Load Provider
+          │
+          ▼
+      terraform plan
+          │
+          ▼
+   Build Dependency Graph
+          │
+          ▼
+    Compare Desired State
+          │
+          ▼
+      Execution Plan
+          │
+          ▼
+     terraform apply
+          │
+          ▼
+      Provider API
+          │
+          ▼
+     Infrastructure
+          │
+          ▼
+       Update State
+```
+
+---
+
+# 3.5 Terraform State Architecture
+
+State connects Terraform configuration with real infrastructure.
+
+```text
+              Terraform
+                  │
+                  ▼
+           Configuration
+                  │
+                  ▼
+                State
+                  │
+                  ▼
+          Actual Resources
+```
+
+With remote state:
+
+```text
+Developer 01 ──┐
+               │
+Developer 02 ──┼──► Remote Backend
+               │
+Developer 03 ──┘
+```
+
+This allows multiple administrators or automation systems to work with shared state.
+
+---
+
+# 3.6 Terraform and Ansible
+
+Terraform and Ansible are often used together.
+
+Terraform generally focuses on **infrastructure provisioning**.
+
+Ansible generally focuses on **configuration and application management**.
+
+Example:
+
+```text
+Terraform
+   │
+   ▼
+Create AWS Infrastructure
+   │
+   ├── VPC
+   ├── Subnet
+   ├── Security Groups
+   └── EC2 Instances
+   │
+   ▼
+Infrastructure Exists
+   │
+   ▼
+Ansible
+   │
+   ├── Configure OS
+   ├── Install Packages
+   ├── Configure Firewall
+   ├── Install Splunk
+   └── Configure Splunk
+   │
+   ▼
+Application Ready
+```
+
+A common division is:
+
+```text
+Terraform = Provision Infrastructure
+
+Ansible = Configure Infrastructure
+```
+
+The two tools can also overlap depending on the implementation.
+
+---
+
+# 3.7 Terraform Splunk Architecture
+
+For a distributed Splunk environment, Terraform can provision the underlying infrastructure.
+
+Example:
+
+```text
+                    Terraform
+                        │
+              ┌─────────┼─────────┐
+              ▼         ▼         ▼
+             VPC      Security    EC2
+                       Groups
+                         │
+        ┌────────────────┼────────────────┐
+        ▼                ▼                ▼
+     Indexers        Search Heads     Forwarders
+        │                │                │
+      IDX01            SH01             UF01
+      IDX02            SH02             UF02
+      IDX03            SH03             UF02
+```
+
+Terraform can manage:
+
+```text
+VPC
+Subnet
+Security Groups
+EC2 Instances
+IAM
+Storage
+Networking
+```
+
+Ansible can then configure:
+
+```text
+Splunk Installation
+Indexer Clustering
+Search Head Clustering
+Deployment Server
+Universal Forwarders
+SSL
+Splunk Configuration
+```
+
+---
+
+# 3.8 Multi-Environment Architecture
+
+Terraform can manage multiple environments.
+
+Example:
+
+```text
+                    Terraform
+                        │
+             ┌──────────┼──────────┐
+             ▼          ▼          ▼
+          Development   Test    Production
+             │          │          │
+             ▼          ▼          ▼
+           AWS Lab    AWS Test   AWS Production
+```
+
+The infrastructure configuration can be reused while environment-specific values are supplied through variables, modules, or other configuration patterns.
+
+---
+
+# 4. Usage
+
+## 4.1 Check Terraform Version
+
+```bash
+terraform version
+```
+
+---
+
+# 4.2 Initialize Terraform
+
+Initialize the working directory:
+
+```bash
+terraform init
+```
+
+This prepares Terraform and installs required providers and modules.
+
+---
+
+# 4.3 Format Configuration
+
+Format Terraform files:
+
+```bash
+terraform fmt
+```
+
+Check formatting recursively:
+
+```bash
+terraform fmt -recursive
+```
+
+---
+
+# 4.4 Validate Configuration
+
+Validate the configuration:
+
+```bash
+terraform validate
+```
+
+This checks whether the configuration is syntactically and structurally valid.
+
+---
+
+# 4.5 Create an Execution Plan
+
+```bash
+terraform plan
+```
+
+Terraform shows what changes it intends to make.
+
+Example:
+
+```text
+Plan:
+
++ create
+~ update
+- destroy
+```
+
+---
+
+# 4.6 Apply Configuration
+
+```bash
+terraform apply
+```
+
+Terraform will display the execution plan and normally request confirmation.
+
+Example:
+
+```text
+Do you want to perform these actions?
+
+Enter a value:
+yes
+```
+
+---
+
+# 4.7 Automatic Approval
+
+For automation environments:
+
+```bash
+terraform apply -auto-approve
+```
+
+This skips the interactive confirmation.
+
+It should be used carefully, particularly against production infrastructure.
+
+---
+
+# 4.8 Destroy Infrastructure
+
+Destroy resources managed by the configuration:
+
+```bash
+terraform destroy
+```
+
+Automatic approval:
+
+```bash
+terraform destroy -auto-approve
+```
+
+Example:
+
+```text
+Terraform
+    │
+    ▼
+terraform destroy
+    │
+    ▼
+Cloud Resources Removed
+```
+
+---
+
+# 4.9 Show State
+
+Display Terraform state:
+
+```bash
+terraform show
+```
+
+List managed resources:
+
+```bash
+terraform state list
+```
+
+---
+
+# 4.10 Show Outputs
+
+```bash
+terraform output
+```
+
+Specific output:
+
+```bash
+terraform output splunk_instance_ip
+```
+
+---
+
+# 4.11 Inspect Providers
+
+Terraform can show provider requirements through the configuration.
+
+Example:
+
+```bash
+terraform providers
+```
+
+This helps identify provider dependencies.
+
+---
+
+# 4.12 Terraform Console
+
+Terraform provides an interactive console:
+
+```bash
+terraform console
+```
+
+Example:
+
+```text
+> var.region
+"ca-central-1"
+```
+
+This can be useful for testing Terraform expressions.
+
+---
+
+# 4.13 Variables
+
+Variables can be supplied through different mechanisms.
+
+Example:
+
+```hcl
+variable "instance_type" {
+  type    = string
+  default = "t3.medium"
+}
+```
+
+Terraform can receive values through:
+
+```text
+terraform.tfvars
+*.auto.tfvars
+Command-line variables
+Environment variables
+```
+
+Example:
+
+```bash
+terraform apply -var="instance_type=t3.medium"
+```
+
+---
+
+# 4.14 Count
+
+`count` can create multiple instances of a resource.
+
+Example:
+
+```hcl
+resource "aws_instance" "splunk" {
+  count = 3
+
+  ami           = var.ami_id
+  instance_type = var.instance_type
+}
+```
+
+This can create:
+
+```text
+splunk[0]
+splunk[1]
+splunk[2]
+```
+
+---
+
+# 4.15 For Each
+
+`for_each` can create resources based on a collection.
+
+Example:
+
+```hcl
+variable "splunk_nodes" {
+  default = {
+    idx01 = "indexer"
+    idx02 = "indexer"
+    sh01  = "search_head"
+  }
+}
+```
+
+Then:
+
+```hcl
+resource "aws_instance" "splunk" {
+  for_each = var.splunk_nodes
+
+  ami           = var.ami_id
+  instance_type = var.instance_type
+
+  tags = {
+    Name = each.key
+    Role = each.value
+  }
+}
+```
+
+Terraform creates resources based on the supplied keys.
+
+---
+
+# 4.16 Dependencies
+
+Terraform can determine implicit dependencies.
+
+Example:
+
+```hcl
+resource "aws_subnet" "splunk" {
+  vpc_id = aws_vpc.splunk.id
+}
+```
+
+The dependency is:
+
+```text
+VPC
+ │
+ ▼
+Subnet
+```
+
+Explicit dependencies can also be declared:
+
+```hcl
+depends_on = [
+  aws_vpc.splunk
+]
+```
+
+Dependencies help Terraform determine resource creation order.
+
+---
+
+# 4.17 Targeted Operations
+
+Terraform provides commands for inspecting or working with individual resources.
+
+Example:
+
+```bash
+terraform state show aws_instance.splunk
+```
+
+For normal infrastructure changes, it is generally preferable to let Terraform evaluate the complete configuration rather than relying heavily on targeted operations.
+
+---
+
+# 5. Configuration
+
+## 5.1 Terraform Project Structure
+
+A typical Terraform project can be organized as:
+
+```text
+terraform/
+├── versions.tf
+├── providers.tf
+├── variables.tf
+├── locals.tf
+├── main.tf
+├── outputs.tf
+├── terraform.tfvars
+├── modules/
+│   ├── network/
+│   └── splunk/
+└── README.md
+```
+
+---
+
+# 5.2 versions.tf
+
+Provider and Terraform version requirements can be defined here.
+
+Example:
+
+```hcl
+terraform {
+  required_version = ">= 1.0.0"
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 6.0"
+    }
+  }
+}
+```
+
+Version constraints help make infrastructure deployments more predictable.
+
+---
+
+# 5.3 providers.tf
+
+Example:
+
+```hcl
+provider "aws" {
+  region = var.aws_region
+}
+```
+
+The provider determines how Terraform communicates with AWS.
+
+---
+
+# 5.4 variables.tf
+
+Variables are normally defined in:
+
+```text
+variables.tf
+```
+
+Example:
+
+```hcl
+variable "aws_region" {
+  type        = string
+  description = "AWS deployment region"
+  default     = "ca-central-1"
+}
+
+variable "instance_type" {
+  type        = string
+  description = "EC2 instance type"
+  default     = "t3.medium"
+}
+```
+
+---
+
+# 5.5 terraform.tfvars
+
+Values can be supplied through:
+
+```text
+terraform.tfvars
+```
+
+Example:
+
+```hcl
+aws_region    = "ca-central-1"
+instance_type = "t3.medium"
+```
+
+Sensitive values should not be committed to source control.
+
+---
+
+# 5.6 main.tf
+
+The main infrastructure configuration can be stored in:
+
+```text
+main.tf
+```
 
 Example:
 
@@ -212,1426 +1479,179 @@ resource "aws_instance" "splunk" {
 }
 ```
 
-HCL is designed to describe infrastructure in a human-readable format.
-
 ---
 
-# 4. Providers
-
-Providers allow Terraform to communicate with external platforms and APIs.
-
-Examples include:
-
-```text
-AWS
-Azure
-Google Cloud
-Kubernetes
-GitHub
-Cloudflare
-VMware
-Datadog
-```
-
-For AWS:
-
-```hcl
-provider "aws" {
-  region = var.aws_region
-}
-```
-
-Terraform uses the AWS provider to communicate with AWS APIs.
-
-Architecture:
-
-```text
-Terraform
-    |
-    v
-AWS Provider
-    |
-    v
-AWS API
-    |
-    +--> VPC
-    +--> EC2
-    +--> Security Groups
-    +--> IAM
-    +--> EBS
-    +--> Other AWS Resources
-```
-
----
-
-# 5. Resources
-
-Resources represent infrastructure that Terraform creates or manages.
+# 5.7 Outputs
 
 Example:
 
 ```hcl
-resource "aws_instance" "splunk" {
-  ami           = var.ami_id
-  instance_type = "t3.medium"
+output "splunk_private_ip" {
+  value = aws_instance.splunk.private_ip
 }
 ```
 
-This creates an AWS EC2 instance.
-
-Other examples:
-
-```hcl
-resource "aws_vpc" "main" {
-  cidr_block = "172.16.0.0/16"
-}
-```
-
-```hcl
-resource "aws_subnet" "splunk" {
-  vpc_id     = aws_vpc.main.id
-  cidr_block = "172.16.10.0/24"
-}
-```
-
-Resources normally follow:
-
-```text
-resource "TYPE" "NAME" {
-  configuration
-}
-```
-
-Example:
-
-```text
-TYPE = aws_instance
-NAME = splunk
-```
-
-The Terraform address becomes:
-
-```text
-aws_instance.splunk
-```
+Outputs can expose useful information after deployment.
 
 ---
 
-# 6. Data Sources
-
-Data sources allow Terraform to retrieve information that already exists.
-
-Example:
-
-```hcl
-data "aws_ami" "rhel" {
-  most_recent = true
-
-  owners = ["309956199498"]
-
-  filter {
-    name   = "name"
-    values = ["RHEL-10*"]
-  }
-}
-```
-
-The data can then be referenced:
-
-```hcl
-ami = data.aws_ami.rhel.id
-```
-
-Difference:
-
-| Resource                       | Data Source                     |
-| ------------------------------ | ------------------------------- |
-| Creates/manages infrastructure | Reads existing information      |
-| `resource` block               | `data` block                    |
-| Terraform manages lifecycle    | Terraform retrieves information |
-
----
-
-# 7. Variables
-
-Variables allow configuration to be reused without hardcoding values.
-
-Example:
-
-```hcl
-variable "aws_region" {
-  description = "AWS deployment region"
-  type        = string
-  default     = "ca-central-1"
-}
-```
-
-Use:
-
-```hcl
-provider "aws" {
-  region = var.aws_region
-}
-```
-
-Another example:
-
-```hcl
-variable "instance_type" {
-  description = "EC2 instance type"
-  type        = string
-  default     = "t3.medium"
-}
-```
-
-This allows the same Terraform code to deploy different instance sizes.
-
----
-
-# 8. Variable Types
-
-Terraform supports several common types.
-
-### String
-
-```hcl
-variable "region" {
-  type = string
-}
-```
-
-### Number
-
-```hcl
-variable "instance_count" {
-  type = number
-}
-```
-
-### Boolean
-
-```hcl
-variable "enable_monitoring" {
-  type = bool
-}
-```
-
-### List
-
-```hcl
-variable "availability_zones" {
-  type = list(string)
-}
-```
-
-### Map
-
-```hcl
-variable "common_tags" {
-  type = map(string)
-}
-```
-
-Example:
-
-```hcl
-common_tags = {
-  Environment = "lab"
-  Project     = "splunk"
-  ManagedBy   = "terraform"
-}
-```
-
----
-
-# 9. Locals
-
-Locals define reusable values inside a Terraform configuration.
+# 5.8 Locals
 
 Example:
 
 ```hcl
 locals {
-  project_name = "splunklab"
-
   common_tags = {
-    Environment = "lab"
-    Project     = "splunk"
-    ManagedBy   = "terraform"
+    Project     = "Splunk"
+    Environment = "Lab"
+    ManagedBy   = "Terraform"
   }
 }
 ```
 
-Use:
+Resources can reuse the tags:
 
 ```hcl
 tags = local.common_tags
 ```
 
-Locals are useful when the same value is referenced throughout multiple resources.
-
 ---
 
-# 10. Outputs
+# 5.9 Common Tags
 
-Outputs expose information after Terraform creates infrastructure.
+Consistent tagging is important for cloud infrastructure.
 
 Example:
 
 ```hcl
-output "splunk_instance_ip" {
-  description = "Public IP address of Splunk server"
-  value       = aws_instance.splunk.public_ip
+locals {
+  common_tags = {
+    Project     = "Splunk"
+    Environment = "Lab"
+    ManagedBy   = "Terraform"
+    Owner       = "Infrastructure"
+  }
 }
 ```
 
-After:
-
-```bash
-terraform apply
-```
-
-Terraform may display:
+Result:
 
 ```text
-splunk_instance_ip = "203.0.113.10"
+EC2
+├── Project
+├── Environment
+├── ManagedBy
+└── Owner
 ```
 
-Outputs are useful for:
+Tags can help with:
 
-* IP addresses
-* DNS names
-* Instance IDs
-* Resource IDs
-* Load balancer addresses
-* Integration with other automation
+```text
+Cost Management
+Resource Identification
+Automation
+Operations
+Inventory
+Governance
+```
 
 ---
 
-# 11. Modules
-
-Modules allow Terraform configurations to be packaged into reusable components.
+# 5.10 Modules
 
 Example:
 
 ```text
 modules/
-├── vpc/
-├── security_group/
-├── ec2/
 └── splunk/
+    ├── main.tf
+    ├── variables.tf
+    └── outputs.tf
 ```
 
-A module can be called:
+Use the module:
 
 ```hcl
 module "splunk" {
   source = "./modules/splunk"
 
   instance_type = "t3.medium"
-  ami_id        = var.ami_id
 }
 ```
 
-Modules help prevent duplicated Terraform code.
+Modules allow reusable infrastructure patterns.
 
 ---
 
-# 12. State
+# 5.11 Backend Configuration
 
-Terraform state is one of the most important Terraform concepts.
-
-Terraform uses state to track infrastructure it manages.
-
-Typical local state file:
-
-```text
-terraform.tfstate
-```
+A backend can be configured for state management.
 
 Conceptually:
 
 ```text
-Terraform Configuration
-        |
-        v
+Terraform
+    │
+    ▼
+Backend
+    │
+    ▼
 Terraform State
-        |
-        v
-Real Infrastructure
 ```
 
-Terraform compares:
-
-```text
-Desired State
-      |
-      v
-terraform configuration
-
-Current Known State
-      |
-      v
-terraform.tfstate
-
-Real Infrastructure
-      |
-      v
-AWS
-```
-
-Terraform uses this information to determine what changes are required.
+A remote backend can provide centralized state storage and may support state locking depending on the backend.
 
 ---
 
-# 13. State File
+# 5.12 State Security
 
-A state file may contain information such as:
+Terraform state can contain sensitive infrastructure information.
 
-```text
-Resource
-Resource ID
-Attributes
-Dependencies
-Provider information
-Metadata
-```
+Avoid storing state carelessly.
 
 Example:
 
 ```text
-aws_instance.splunk
-    |
-    +-- instance_id
-    +-- private_ip
-    +-- public_ip
-    +-- availability_zone
-```
-
-State can contain sensitive information.
-
-Therefore:
-
-```text
-terraform.tfstate
-```
-
-should generally **not** be committed to Git.
-
-Use `.gitignore`:
-
-```gitignore
-.terraform/
-*.tfstate
-*.tfstate.*
-*.tfvars
-*.tfvars.json
-crash.log
-```
-
----
-
-# 14. Backend
-
-A backend determines where Terraform stores state.
-
-Local backend:
-
-```text
-Terraform
-    |
-    v
-terraform.tfstate
-    |
-    v
-Local filesystem
-```
-
-Remote backend:
-
-```text
-Terraform
-    |
-    v
-Remote Backend
-    |
-    v
-Shared State
-```
-
-Remote state is commonly used for team environments.
-
-AWS environments may use:
-
-```text
-S3
-```
-
-for state storage, often combined with locking depending on the Terraform/AWS setup and backend configuration.
-
----
-
-# 15. Dependency Graph
-
-Terraform builds a dependency graph to determine resource relationships.
-
-Example:
-
-```text
-VPC
- |
- +--> Subnet
-       |
-       +--> Security Group
-       |
-       +--> EC2
-```
-
-Terraform understands references such as:
-
-```hcl
-vpc_id = aws_vpc.main.id
-```
-
-This creates an implicit dependency.
-
-Terraform therefore knows the VPC must exist before the dependent resource can be created.
-
----
-
-# Architecture
-
-## Basic Terraform Architecture
-
-```text
-+----------------------+
-| Terraform CLI        |
-|                      |
-| .tf configuration    |
-+----------+-----------+
-           |
-           v
-+----------------------+
-| Terraform Engine     |
-|                      |
-| Plan / Graph / State |
-+----------+-----------+
-           |
-           v
-+----------------------+
-| Provider             |
-| AWS / Azure / GCP    |
-+----------+-----------+
-           |
-           v
-+----------------------+
-| Cloud/API Platform   |
-+----------------------+
-```
-
----
-
-# AWS Terraform Architecture
-
-A typical AWS deployment:
-
-```text
-                    Terraform
-                        |
-                        v
-                 AWS Provider
-                        |
-                        v
-                  AWS API
-                        |
-        +---------------+---------------+
-        |               |               |
-        v               v               v
-       VPC             IAM             EC2
-        |
-        +-----------------------+
-        |                       |
-        v                       v
-      Subnet              Security Group
-        |
-        v
-   Splunk Servers
-```
-
----
-
-# Splunk + Terraform Architecture
-
-Terraform can provision the infrastructure while Ansible configures the software.
-
-```text
-                    Terraform
-                       |
-                       v
-                AWS Infrastructure
-                       |
-        +--------------+--------------+
-        |              |              |
-        v              v              v
-      VPC            EC2            Security
-                     Instances       Groups
-                       |
-                       v
-                    Ansible
-                       |
-          +------------+------------+
-          |            |            |
-          v            v            v
-      Splunk IDX    Splunk SH    Forwarders
-```
-
-This creates a useful separation:
-
-```text
-Terraform
-    |
-    +--> Infrastructure
-          VPC
-          Subnets
-          EC2
-          Security Groups
-          IAM
-
-Ansible
-    |
-    +--> Configuration
-          Splunk installation
-          Cluster configuration
-          SSL
-          Firewall
-          Forwarders
-          Search Head Cluster
-          Indexer Cluster
-```
-
----
-
-# Example Splunk AWS Architecture
-
-A Terraform project can provision infrastructure for:
-
-```text
-AWS
-|
-+-- VPC
-|    |
-|    +-- Subnet
-|
-+-- Security Group
-|
-+-- EC2
-     |
-     +-- cm1
-     +-- idx01
-     +-- idx02
-     +-- idx03
-     +-- sh01
-     +-- sh02
-     +-- sh03
-     +-- dep01
-     +-- ds01
-     +-- lm01
-     +-- hf01
-     +-- hf02
-     +-- uf01
-     +-- uf02
-```
-
-Terraform creates the infrastructure.
-
-Ansible configures the Splunk services.
-
----
-
-# Usage
-
-## Initialize a Project
-
-Create a directory:
-
-```bash
-mkdir terraform-lab
-cd terraform-lab
-```
-
-Create:
-
-```text
-main.tf
-```
-
-Run:
-
-```bash
-terraform init
-```
-
-Terraform downloads the required providers and initializes the working directory.
-
----
-
-# Format Configuration
-
-Run:
-
-```bash
-terraform fmt
-```
-
-This formats Terraform configuration according to Terraform's standard formatting rules.
-
-Check formatting:
-
-```bash
-terraform fmt -check
-```
-
----
-
-# Validate Configuration
-
-Run:
-
-```bash
-terraform validate
-```
-
-This checks whether the configuration is syntactically and structurally valid.
-
-Example:
-
-```text
-Success! The configuration is valid.
-```
-
----
-
-# Terraform Plan
-
-Run:
-
-```bash
-terraform plan
-```
-
-Terraform evaluates the configuration and shows proposed changes.
-
-Example:
-
-```text
-Plan: 3 to add, 0 to change, 0 to destroy.
-```
-
-Terraform uses:
-
-```text
-Configuration
-      +
-State
-      +
-Provider information
-      |
-      v
-Terraform Plan
-```
-
----
-
-# Terraform Apply
-
-Run:
-
-```bash
-terraform apply
-```
-
-Terraform displays the proposed changes and normally asks for confirmation.
-
-```text
-Do you want to perform these actions?
-  Only 'yes' will be accepted to approve.
-```
-
-Apply:
-
-```text
-yes
-```
-
-Terraform then creates or modifies the infrastructure.
-
----
-
-# Automatic Approval
-
-For automation:
-
-```bash
-terraform apply -auto-approve
-```
-
-Use this carefully in production because it skips the interactive approval step.
-
----
-
-# Destroy
-
-To remove infrastructure managed by Terraform:
-
-```bash
-terraform destroy
-```
-
-Terraform shows the resources that will be removed.
-
-Example:
-
-```text
-Plan: 0 to add, 0 to change, 3 to destroy.
-```
-
----
-
-# Targeting Resources
-
-Terraform can target a specific resource:
-
-```bash
-terraform plan -target=aws_instance.splunk
-```
-
-However, targeted operations should generally be used carefully and not as the normal workflow because Terraform is designed to manage the complete dependency graph.
-
----
-
-# Show State
-
-View Terraform state:
-
-```bash
-terraform show
-```
-
-List resources:
-
-```bash
-terraform state list
-```
-
-Example:
-
-```text
-aws_vpc.main
-aws_subnet.splunk
-aws_security_group.splunk
-aws_instance.idx01
-aws_instance.idx02
-aws_instance.idx03
-```
-
----
-
-# Terraform Console
-
-Terraform provides an interactive console:
-
-```bash
-terraform console
-```
-
-This can be useful for testing expressions.
-
-Example:
-
-```text
-> var.aws_region
-"ca-central-1"
-```
-
----
-
-# Configuration
-
-## Recommended Project Structure
-
-A small Terraform project:
-
-```text
-terraform/
-├── versions.tf
-├── providers.tf
-├── variables.tf
-├── main.tf
-├── outputs.tf
-├── terraform.tfvars
-└── .gitignore
-```
-
-A larger project:
-
-```text
-terraform/
-├── environments/
-│   ├── dev/
-│   ├── test/
-│   └── prod/
+Terraform State
 │
-├── modules/
-│   ├── vpc/
-│   ├── security_group/
-│   ├── ec2/
-│   └── splunk/
-│
-├── versions.tf
-├── providers.tf
-├── variables.tf
-├── main.tf
-├── outputs.tf
-└── README.md
+├── Resource IDs
+├── Network Information
+├── Configuration Values
+└── Potentially Sensitive Values
 ```
 
----
-
-# versions.tf
-
-Define Terraform and provider requirements.
-
-Example:
-
-```hcl
-terraform {
-  required_version = ">= 1.0.0"
-
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 6.0"
-    }
-  }
-}
-```
-
-Provider versions should be deliberately controlled in production rather than allowing unexpected upgrades.
-
----
-
-# providers.tf
-
-Example:
-
-```hcl
-provider "aws" {
-  region = var.aws_region
-}
-```
-
----
-
-# variables.tf
-
-Example:
-
-```hcl
-variable "aws_region" {
-  description = "AWS region"
-  type        = string
-  default     = "ca-central-1"
-}
-
-variable "vpc_cidr" {
-  description = "VPC CIDR"
-  type        = string
-  default     = "172.16.0.0/16"
-}
-
-variable "subnet_cidr" {
-  description = "Splunk subnet CIDR"
-  type        = string
-  default     = "172.16.10.0/24"
-}
-
-variable "instance_type" {
-  description = "EC2 instance type"
-  type        = string
-  default     = "t3.medium"
-}
-```
-
----
-
-# main.tf
-
-Example:
-
-```hcl
-resource "aws_vpc" "main" {
-  cidr_block = var.vpc_cidr
-
-  tags = {
-    Name = "splunklab-vpc"
-  }
-}
-
-resource "aws_subnet" "splunk" {
-  vpc_id     = aws_vpc.main.id
-  cidr_block = var.subnet_cidr
-
-  tags = {
-    Name = "splunklab-subnet"
-  }
-}
-```
-
----
-
-# outputs.tf
-
-Example:
-
-```hcl
-output "vpc_id" {
-  description = "VPC ID"
-  value       = aws_vpc.main.id
-}
-
-output "subnet_id" {
-  description = "Splunk subnet ID"
-  value       = aws_subnet.splunk.id
-}
-```
-
----
-
-# terraform.tfvars
-
-Example:
-
-```hcl
-aws_region   = "ca-central-1"
-vpc_cidr     = "172.16.0.0/16"
-subnet_cidr  = "172.16.10.0/24"
-instance_type = "t3.medium"
-```
-
-Do not commit sensitive values to Git.
-
-For example:
-
-```gitignore
-terraform.tfvars
-*.tfstate
-*.tfstate.*
-```
-
----
-
-# Resource Meta-Arguments
-
-Terraform resources support important meta-arguments.
-
-## count
-
-Create multiple resources:
-
-```hcl
-resource "aws_instance" "splunk" {
-  count = 3
-
-  ami           = var.ami_id
-  instance_type = var.instance_type
-}
-```
-
-Resources become:
+State should therefore be protected using appropriate:
 
 ```text
-aws_instance.splunk[0]
-aws_instance.splunk[1]
-aws_instance.splunk[2]
+Access Controls
+Encryption
+Backend Security
+Credential Management
+State Locking
 ```
 
 ---
 
-# for_each
+# 5.13 Secrets
 
-`for_each` is useful when each resource needs a unique identity.
+Sensitive values should not be hardcoded.
 
-Example:
+Avoid:
 
 ```hcl
-variable "splunk_nodes" {
-  default = {
-    idx01 = "t3.medium"
-    idx02 = "t3.medium"
-    idx03 = "t3.medium"
-  }
-}
+password = "MyPassword123"
 ```
 
-Resource:
-
-```hcl
-resource "aws_instance" "splunk" {
-  for_each = var.splunk_nodes
-
-  ami           = var.ami_id
-  instance_type = each.value
-
-  tags = {
-    Name = each.key
-  }
-}
-```
-
-This produces:
+Prefer appropriate secret-management mechanisms such as:
 
 ```text
-idx01
-idx02
-idx03
+Environment Variables
+Cloud Secret Managers
+Terraform Sensitive Variables
+External Secret Systems
 ```
 
----
-
-# depends_on
-
-Terraform normally determines dependencies automatically.
-
-Explicit dependency:
-
-```hcl
-resource "aws_instance" "splunk" {
-  depends_on = [
-    aws_security_group.splunk
-  ]
-
-  ami           = var.ami_id
-  instance_type = var.instance_type
-}
-```
-
-Use `depends_on` when Terraform cannot infer the dependency from resource references.
-
----
-
-# lifecycle
-
-Terraform lifecycle settings control resource behavior.
-
-Example:
-
-```hcl
-lifecycle {
-  create_before_destroy = true
-}
-```
-
-Another option:
-
-```hcl
-lifecycle {
-  prevent_destroy = true
-}
-```
-
-This can help protect important resources from accidental deletion.
-
----
-
-# Tags
-
-Tags are extremely useful in AWS environments.
-
-Example:
-
-```hcl
-locals {
-  common_tags = {
-    Project     = "Splunk Lab"
-    Environment = "Lab"
-    ManagedBy   = "Terraform"
-    Owner       = "Security Engineering"
-  }
-}
-```
-
-Use:
-
-```hcl
-tags = local.common_tags
-```
-
-Resource-specific tags can be added:
-
-```hcl
-tags = merge(
-  local.common_tags,
-  {
-    Name = "idx01"
-    Role = "splunk-indexer"
-  }
-)
-```
-
----
-
-# Dependencies
-
-Terraform itself is the primary automation engine, but infrastructure deployment usually depends on several external components.
-
-## Terraform Dependencies
-
-```text
-Terraform CLI
-     |
-     +-- Provider
-     |
-     +-- Cloud API
-     |
-     +-- Credentials
-     |
-     +-- Network
-     |
-     +-- State Backend
-```
-
----
-
-# Cloud Provider
-
-Terraform requires a provider for the platform being managed.
-
-For AWS:
-
-```text
-Terraform
-    |
-    v
-AWS Provider
-    |
-    v
-AWS API
-```
-
----
-
-# Credentials
-
-Terraform needs authentication to the target platform.
-
-AWS credentials can be provided through mechanisms such as:
-
-```text
-AWS CLI configuration
-Environment variables
-IAM roles
-Instance profiles
-OIDC-based authentication
-```
-
-Avoid hardcoding credentials:
-
-```hcl
-access_key = "..."
-secret_key = "..."
-```
-
-Prefer secure credential mechanisms.
-
----
-
-# Network Connectivity
-
-Terraform must be able to communicate with the provider API.
-
-For AWS:
-
-```text
-Terraform
-    |
-    v
-Internet / AWS connectivity
-    |
-    v
-AWS API
-```
-
----
-
-# Git
-
-Terraform configuration should normally be stored in version control.
-
-Example:
-
-```text
-Git
- |
- +-- main.tf
- +-- variables.tf
- +-- outputs.tf
- +-- providers.tf
- +-- modules/
-```
-
-Git provides:
-
-* Version history
-* Change tracking
-* Code review
-* Collaboration
-* Rollback reference
-* Auditability
-
----
-
-# Terraform + Ansible
-
-Terraform and Ansible solve different parts of infrastructure automation.
-
-## Terraform
-
-Terraform is primarily used for:
-
-```text
-Infrastructure Provisioning
-```
-
-Examples:
-
-```text
-VPC
-Subnet
-EC2
-Security Groups
-IAM
-Load Balancers
-Storage
-```
-
-## Ansible
-
-Ansible is primarily used for:
-
-```text
-Configuration Management
-```
-
-Examples:
-
-```text
-OS configuration
-Package installation
-Splunk installation
-Configuration files
-Firewall
-SSL
-Cluster configuration
-Application configuration
-```
-
-Combined:
-
-```text
-                    Git
-                     |
-          +----------+----------+
-          |                     |
-          v                     v
-      Terraform               Ansible
-          |                     |
-          v                     v
- Infrastructure             Configuration
-          |                     |
-          v                     v
-        AWS                  Splunk
-```
-
-This is a common and useful separation of responsibilities.
-
----
-
-# Terraform + Splunk Example
-
-For a Splunk distributed deployment:
-
-```text
-Terraform
-|
-+-- VPC
-|
-+-- Subnet
-|
-+-- Security Groups
-|
-+-- EC2 Instances
-     |
-     +-- cm1
-     +-- idx01
-     +-- idx02
-     +-- idx03
-     +-- sh01
-     +-- sh02
-     +-- sh03
-     +-- dep01
-     +-- ds01
-     +-- lm01
-     +-- hf01
-     +-- hf02
-     +-- uf01
-     +-- uf02
-```
-
-Then:
-
-```text
-Ansible
-|
-+-- OS configuration
-+-- Splunk installation
-+-- SSL
-+-- Firewall
-+-- Indexer Cluster
-+-- Search Head Cluster
-+-- Deployment Server
-+-- Universal Forwarders
-```
-
-This approach keeps infrastructure provisioning separate from application configuration.
-
----
-
-# Security
-
-Terraform should be treated as production infrastructure code.
-
-## Protect Credentials
-
-Do not hardcode:
-
-```text
-AWS Access Keys
-Passwords
-API Tokens
-Private Keys
-Certificates
-Secrets
-```
-
-Bad:
-
-```hcl
-variable "password" {
-  default = "SuperSecretPassword"
-}
-```
-
-Better:
+Mark Terraform variables as sensitive where appropriate:
 
 ```hcl
 variable "password" {
@@ -1640,880 +1660,628 @@ variable "password" {
 }
 ```
 
-Use an external secret-management system where appropriate.
+Sensitive does not automatically mean that the value is absent from state, so state security remains important.
 
 ---
 
-# Protect Terraform State
+# 5.14 AWS Credentials
 
-Terraform state may contain sensitive information.
+Terraform requires AWS authentication when managing AWS infrastructure.
 
-Consider:
-
-```text
-Encryption
-Access control
-Remote state
-State locking
-Restricted permissions
-Audit logging
-```
-
-Do not casually expose:
+Common approaches include:
 
 ```text
-terraform.tfstate
+AWS CLI Configuration
+Environment Variables
+IAM Roles
+Instance Roles
+Federated Identity
+Credential Management Systems
 ```
+
+Avoid embedding long-lived access keys directly into Terraform configuration.
 
 ---
 
-# IAM Permissions
+# 5.15 Lifecycle Configuration
 
-Terraform should use the minimum permissions required for its intended resources.
-
-For example:
-
-```text
-Terraform IAM Role
-       |
-       +-- VPC permissions
-       +-- EC2 permissions
-       +-- Security Group permissions
-       +-- IAM permissions
-```
-
-Avoid using unrestricted administrator credentials for normal automation when a narrower role can accomplish the task.
-
----
-
-# Security Groups
-
-Terraform can manage AWS security groups.
+Terraform resources can use lifecycle settings.
 
 Example:
 
 ```hcl
-resource "aws_security_group" "splunk" {
-  name   = "splunk-security-group"
-  vpc_id = aws_vpc.main.id
+resource "aws_instance" "splunk" {
 
-  ingress {
-    description = "Splunk Web"
-    from_port   = 8000
-    to_port     = 8000
-    protocol    = "tcp"
-    cidr_blocks = ["10.0.0.0/8"]
+  lifecycle {
+    create_before_destroy = true
   }
 }
 ```
 
-Only expose required ports and trusted source networks.
+Lifecycle controls can influence how Terraform handles resource changes.
 
----
+Other lifecycle settings include:
 
-# Sensitive Variables
-
-Mark sensitive outputs:
-
-```hcl
-output "secret_value" {
-  value     = var.secret_value
-  sensitive = true
-}
+```text
+create_before_destroy
+prevent_destroy
+ignore_changes
+replace_triggered_by
 ```
 
-This helps prevent Terraform from displaying the value normally in CLI output.
+---
+
+# 5.16 Resource Naming
+
+Consistent resource naming makes infrastructure easier to manage.
+
+Example:
+
+```text
+splunk-vpc
+splunk-subnet
+splunk-security-group
+splunk-idx01
+splunk-idx02
+splunk-sh01
+splunk-sh02
+```
+
+A consistent naming strategy helps with:
+
+```text
+Operations
+Troubleshooting
+Inventory
+Cost Management
+Automation
+```
 
 ---
 
-# License / Cost
+# 6. Dependencies
 
-Terraform itself has different distribution and product considerations depending on the Terraform edition/version and HashiCorp offerings in use.
+## 6.1 Terraform CLI
 
-For infrastructure automation, cost should be considered at two levels:
+The Terraform CLI is required to execute Terraform configurations.
+
+Verify:
+
+```bash
+terraform version
+```
+
+---
+
+# 6.2 Operating System
+
+Terraform can run on supported operating systems such as:
+
+```text
+Linux
+Windows
+macOS
+```
+
+The exact supported platforms depend on the Terraform release.
+
+---
+
+# 6.3 Provider
+
+Terraform requires providers for the platforms it manages.
+
+Example:
 
 ```text
 Terraform
-+
+    │
+    ▼
+AWS Provider
+    │
+    ▼
+AWS API
+```
+
+Without the required provider, Terraform cannot manage the corresponding resources.
+
+---
+
+# 6.4 Cloud Credentials
+
+Cloud infrastructure requires authentication.
+
+For AWS:
+
+```text
+Terraform
+    │
+    ▼
+AWS Provider
+    │
+    ▼
+AWS Credentials / IAM Role
+    │
+    ▼
+AWS API
+```
+
+The authenticated identity must have the required permissions.
+
+---
+
+# 6.5 Network
+
+Terraform requires network connectivity when communicating with remote provider APIs.
+
+Example:
+
+```text
+Terraform Host
+      │
+      │ HTTPS
+      ▼
+Cloud Provider API
+```
+
+For AWS, Terraform commonly communicates with AWS APIs over HTTPS.
+
+---
+
+# 6.6 Cloud Service Limits
+
+Cloud providers impose service quotas and limits.
+
+Example:
+
+```text
+AWS Account
+│
+├── EC2 Limits
+├── VPC Limits
+├── EBS Limits
+├── Elastic IP Limits
+└── API Limits
+```
+
+Terraform cannot create resources beyond the limits imposed by the cloud provider.
+
+For example:
+
+```text
+Terraform
+    │
+    ▼
+AWS API
+    │
+    ▼
+Service Quota
+    │
+    ├── Allowed → Create Resource
+    │
+    └── Exceeded → API Error
+```
+
+---
+
+# 6.7 IAM Permissions
+
+Terraform's cloud identity must have sufficient permissions.
+
+Example:
+
+```text
+Terraform
+    │
+    ▼
+IAM Identity
+    │
+    ▼
+AWS API
+    │
+    ▼
+Resources
+```
+
+Permissions may include access to:
+
+```text
+EC2
+VPC
+IAM
+S3
+EBS
+CloudWatch
+Security Groups
+Load Balancers
+```
+
+The required permissions depend on the resources Terraform manages.
+
+---
+
+# 6.8 Backend
+
+If using a remote backend, Terraform requires access to the backend.
+
+Example:
+
+```text
+Terraform
+    │
+    ▼
+Remote Backend
+    │
+    ▼
+Terraform State
+```
+
+The backend may require:
+
+```text
+Authentication
+Network Access
+Permissions
+State Locking
+Encryption
+```
+
+---
+
+# 6.9 Git
+
+Git is not required for Terraform itself, but it is commonly used to manage Terraform code.
+
+Example:
+
+```text
+Git Repository
+│
+├── main.tf
+├── variables.tf
+├── outputs.tf
+├── providers.tf
+├── modules/
+└── README.md
+```
+
+Git provides:
+
+* Version control
+* Change history
+* Collaboration
+* Branching
+* Rollback
+* Code review
+
+---
+
+# 6.10 Ansible
+
+Ansible is not a dependency of Terraform, but the two tools are frequently used together.
+
+Example:
+
+```text
+Terraform
+    │
+    ▼
+Infrastructure
+    │
+    ▼
+Ansible
+    │
+    ▼
+Configuration
+```
+
+Terraform can create:
+
+```text
+EC2
+VPC
+Subnet
+Security Groups
+```
+
+Ansible can configure:
+
+```text
+Operating System
+Packages
+Firewall
+Splunk
+Applications
+Services
+```
+
+---
+
+# 6.11 CI/CD
+
+Terraform can be integrated into CI/CD systems.
+
+Example:
+
+```text
+Git
+ │
+ ▼
+CI/CD Pipeline
+ │
+ ├── terraform fmt
+ ├── terraform validate
+ ├── terraform plan
+ │
+ ▼
+Approval
+ │
+ ▼
+terraform apply
+ │
+ ▼
 Infrastructure
 ```
 
-## Terraform Cost
-
-Terraform is an infrastructure automation tool; using Terraform does not make the underlying infrastructure free.
-
-For example:
-
-```text
-Terraform
-    |
-    v
-AWS
-    |
-    +-- EC2
-    +-- EBS
-    +-- VPC-related services
-    +-- Data transfer
-    +-- Load Balancers
-    +-- NAT Gateway
-    +-- Other services
-```
-
-The AWS resources still incur their normal charges.
+This allows infrastructure changes to be reviewed and automated.
 
 ---
 
-# Infrastructure Cost
+# 7. License / Cost
 
-For an AWS Splunk lab, major cost factors can include:
+## 7.1 Terraform Licensing
 
-| Resource      | Potential Cost                     |
-| ------------- | ---------------------------------- |
-| EC2           | Compute                            |
-| EBS           | Storage                            |
-| Elastic IP    | Depending on usage/current pricing |
-| NAT Gateway   | Hourly + data processing           |
-| Data Transfer | Network usage                      |
-| S3            | State/storage                      |
-| CloudWatch    | Monitoring/logging                 |
-| Splunk        | Separate licensing considerations  |
+Terraform is distributed under HashiCorp's licensing terms, which have changed over time.
 
-A large distributed Splunk lab can become expensive because it may require many EC2 instances.
+For production or organizational use, the **current Terraform licensing terms should be verified against HashiCorp's official documentation and the specific Terraform version being used**.
 
-For example:
+The important distinction is:
 
 ```text
-cm1
-idx01
-idx02
-idx03
-sh01
-sh02
-sh03
-dep01
-ds01
-lm01
-hf01
-hf02
-uf01
-uf02
+Terraform Software
+        │
+        ▼
+Licensing Terms
+
+Infrastructure
+        │
+        ▼
+Cloud Provider Costs
 ```
 
-means many infrastructure resources may be running simultaneously.
+Terraform licensing and infrastructure costs are separate concerns.
 
 ---
 
-# Performance
+# 7.2 Terraform Open-Source / Community Ecosystem
 
-Terraform performance is generally affected by:
-
-* Number of resources
-* Provider API performance
-* API rate limits
-* Dependency graph complexity
-* Module complexity
-* State size
-* Backend performance
-* Number of parallel operations
-
-Terraform can perform independent operations in parallel when dependencies allow it.
+Terraform has a large ecosystem of providers, modules, and community resources.
 
 Conceptually:
 
 ```text
-VPC
- |
- +---- Subnet
- |
- +---- IAM
- |
- +---- Security Group
- |
- +---- Other independent resources
+Terraform
+    │
+    ├── Providers
+    ├── Modules
+    ├── Community Resources
+    └── Enterprise Capabilities
 ```
 
-Independent resources may be processed concurrently.
+The licensing terms of Terraform itself, providers, modules, and other components may differ and should be evaluated individually.
 
 ---
 
-# Parallelism
+# 7.3 Terraform Enterprise / HCP Terraform
 
-Terraform supports parallel resource operations.
+HashiCorp provides commercial offerings around Terraform, including **HCP Terraform** and other enterprise capabilities.
 
-Example:
-
-```bash
-terraform apply -parallelism=10
-```
-
-The default parallelism should generally be sufficient.
-
-Increasing parallelism does not automatically make deployments better because provider API limits and infrastructure dependencies still apply.
-
----
-
-# Reliability
-
-Terraform improves infrastructure consistency by allowing infrastructure to be recreated from code.
-
-Example:
+These offerings can provide capabilities around:
 
 ```text
-Terraform Code
-      |
-      v
-AWS Environment
+Remote State
+Team Collaboration
+Policy
+Governance
+Access Control
+Automation
+Private Registry
+Enterprise Workflows
 ```
 
-If the environment needs to be recreated:
-
-```text
-Terraform Code
-      |
-      v
-New AWS Environment
-```
-
-This is one of the major benefits of Infrastructure as Code.
+The exact capabilities and pricing depend on the current HashiCorp offering and plan.
 
 ---
 
-# Idempotency
+# 7.4 Terraform vs Infrastructure Cost
 
-Terraform is designed around desired state.
+Terraform itself does not normally represent the primary cost of running cloud infrastructure.
 
 Example:
 
 ```text
-Desired:
-3 Splunk Indexers
+Terraform
+    │
+    ▼
+Creates Infrastructure
+    │
+    ▼
+Cloud Provider
+    │
+    ├── EC2
+    ├── EBS
+    ├── VPC
+    ├── Load Balancer
+    └── Storage
+         │
+         ▼
+      Cloud Cost
 ```
 
-Current:
+For an AWS Splunk environment, costs may include:
 
 ```text
-3 Splunk Indexers
+EC2 Instances
+EBS Volumes
+Data Transfer
+Elastic IPs
+Load Balancers
+S3
+CloudWatch
+Other AWS Services
 ```
+
+---
+
+# 7.5 Splunk Infrastructure Cost
+
+Terraform can provision infrastructure for Splunk, but Terraform does not eliminate the cost of the infrastructure or software running on it.
+
+Example:
+
+```text
+Terraform
+    │
+    ▼
+AWS Infrastructure
+    │
+    ├── EC2
+    ├── EBS
+    ├── Network
+    └── Storage
+    │
+    ▼
+Splunk Environment
+```
+
+Potential costs include:
+
+```text
+AWS Infrastructure
++
+Splunk Licensing
++
+Storage
++
+Network
++
+Administration
+```
+
+---
+
+# 7.6 Operational Cost
+
+Infrastructure as Code can reduce repetitive manual provisioning work.
+
+Example:
+
+```text
+Manual:
+
+Administrator
+    │
+    ├── Create VPC
+    ├── Create Subnet
+    ├── Create Security Group
+    ├── Create EC2
+    └── Configure Infrastructure
+
 
 Terraform:
 
-```text
-No changes
+Administrator
+       │
+       ▼
+ Terraform Code
+       │
+       ▼
+ Infrastructure
 ```
 
-If only two exist:
+However, Terraform automation itself requires:
 
-```text
-Desired: 3
-Current: 2
-```
-
-Terraform can determine that another resource needs to be created.
+* Development
+* Testing
+* Code review
+* State management
+* Security
+* Documentation
+* Maintenance
+* Troubleshooting
 
 ---
 
-# Drift
+# Quick Reference
 
-Infrastructure can change outside Terraform.
+## Core Components
 
-Example:
+| Component        | Purpose                                     |
+| ---------------- | ------------------------------------------- |
+| Terraform CLI    | Executes Terraform commands                 |
+| HCL              | Defines Terraform configuration             |
+| Provider         | Connects Terraform to external APIs         |
+| Resource         | Represents infrastructure Terraform manages |
+| Data Source      | Retrieves existing information              |
+| Variable         | Provides configurable values                |
+| Local            | Defines reusable local values               |
+| Output           | Exposes Terraform values                    |
+| Module           | Reusable Terraform configuration            |
+| State            | Tracks managed infrastructure               |
+| Backend          | Stores Terraform state                      |
+| Dependency Graph | Determines resource relationships           |
+| Plan             | Shows proposed infrastructure changes       |
+| Apply            | Applies infrastructure changes              |
 
-```text
-Terraform
-   |
-   v
-AWS EC2
-```
+---
 
-An administrator manually changes:
-
-```text
-Instance Type
-```
-
-Terraform configuration still says:
-
-```text
-t3.medium
-```
-
-but AWS contains:
-
-```text
-t3.large
-```
-
-This creates configuration drift.
-
-Terraform can detect differences during:
+## Common Commands
 
 ```bash
-terraform plan
-```
+# Check version
+terraform version
 
----
-
-# Monitoring
-
-Terraform itself should be monitored as part of the infrastructure deployment process.
-
-Useful areas include:
-
-```text
-Terraform Plan
-Terraform Apply
-Terraform State
-Provider Errors
-Cloud Provider Events
-CI/CD Pipeline Results
-Infrastructure Health
-```
-
-For enterprise environments, infrastructure changes should ideally be traceable to:
-
-```text
-Person
-    |
-    v
-Git Change
-    |
-    v
-Terraform Plan
-    |
-    v
-Approval
-    |
-    v
-Terraform Apply
-    |
-    v
-Infrastructure
-```
-
----
-
-# Troubleshooting
-
-## terraform init fails
-
-Run:
-
-```bash
+# Initialize project
 terraform init
-```
 
-Check:
+# Format configuration
+terraform fmt
 
-```text
-Internet connectivity
-Provider configuration
-Provider version
-Backend configuration
-Credentials
-```
+# Format recursively
+terraform fmt -recursive
 
----
-
-## terraform validate fails
-
-Run:
-
-```bash
+# Validate configuration
 terraform validate
-```
 
-Check:
-
-```text
-Syntax
-Variable definitions
-Resource references
-Provider configuration
-Module configuration
-```
-
----
-
-## terraform plan shows unexpected changes
-
-Check:
-
-```bash
+# Create execution plan
 terraform plan
-```
 
-Then:
+# Apply configuration
+terraform apply
 
-```bash
+# Apply without confirmation
+terraform apply -auto-approve
+
+# Destroy infrastructure
+terraform destroy
+
+# Show state
 terraform show
-```
 
-and:
-
-```bash
+# List managed resources
 terraform state list
-```
 
-Potential causes:
+# Show specific resource state
+terraform state show aws_instance.splunk
 
-```text
-Configuration drift
-Changed variables
-Provider changes
-Resource replacement
-Incorrect state
-Changed defaults
-```
+# Show outputs
+terraform output
 
----
+# Show providers
+terraform providers
 
-# Resource Will Be Replaced
-
-Terraform may show:
-
-```text
--/+ resource
-```
-
-This usually means Terraform intends to destroy and recreate the resource.
-
-Pay close attention to:
-
-```text
-forces replacement
-```
-
-before running:
-
-```bash
-terraform apply
-```
-
----
-
-# State Lock Problems
-
-If using remote state and state locking is enabled, Terraform may report that the state is locked.
-
-Do not immediately force-unlock without understanding why the lock exists.
-
-First determine:
-
-```text
-Is another Terraform operation running?
-Did a previous operation fail?
-Is the lock stale?
-```
-
----
-
-# Credentials Not Found
-
-AWS authentication errors may indicate that Terraform cannot find valid credentials.
-
-Check:
-
-```bash
-aws sts get-caller-identity
-```
-
-If the AWS CLI can authenticate but Terraform cannot, review the Terraform provider configuration and credential environment.
-
----
-
-# Provider Errors
-
-Example:
-
-```text
-Error: creating EC2 instance
-```
-
-Investigate:
-
-```text
-AWS permissions
-AWS region
-AMI availability
-Instance limits
-VPC configuration
-Subnet configuration
-Security groups
-Service quotas
-```
-
----
-
-# AWS Service Quotas
-
-Cloud providers impose resource limits.
-
-For example:
-
-```text
-EC2 vCPU limits
-Elastic IP limits
-VPC limits
-Subnet limits
-Security group limits
-API rate limits
-```
-
-Terraform cannot bypass these limits.
-
-For a large Splunk lab, check AWS service quotas before provisioning many instances.
-
----
-
-# Common Terraform Commands
-
-| Command                | Purpose                        |
-| ---------------------- | ------------------------------ |
-| `terraform init`       | Initialize project             |
-| `terraform fmt`        | Format code                    |
-| `terraform validate`   | Validate configuration         |
-| `terraform plan`       | Preview changes                |
-| `terraform apply`      | Apply changes                  |
-| `terraform destroy`    | Destroy resources              |
-| `terraform show`       | Display state/plan             |
-| `terraform output`     | Display outputs                |
-| `terraform state list` | List managed resources         |
-| `terraform state show` | Show resource state            |
-| `terraform providers`  | Show providers                 |
-| `terraform graph`      | Generate dependency graph      |
-| `terraform console`    | Interactive expression console |
-| `terraform version`    | Show Terraform version         |
-
----
-
-# Recommended Terraform Workflow
-
-A practical workflow is:
-
-```text
-1. Write Terraform code
-          |
-          v
-2. terraform fmt
-          |
-          v
-3. terraform init
-          |
-          v
-4. terraform validate
-          |
-          v
-5. terraform plan
-          |
-          v
-6. Review changes
-          |
-          v
-7. terraform apply
-          |
-          v
-8. Validate infrastructure
-          |
-          v
-9. Configure infrastructure
-```
-
-For your Splunk lab:
-
-```text
-Terraform
-   |
-   +--> AWS VPC
-   +--> Subnet
-   +--> Security Groups
-   +--> EC2
-   |
-   v
-Ansible
-   |
-   +--> RHEL Configuration
-   +--> Splunk Installation
-   +--> SSL
-   +--> Indexer Cluster
-   +--> Search Head Cluster
-   +--> Forwarders
-```
-
----
-
-# Terraform vs Ansible
-
-| Area                      | Terraform                   | Ansible                        |
-| ------------------------- | --------------------------- | ------------------------------ |
-| Primary purpose           | Infrastructure provisioning | Configuration management       |
-| IaC                       | Yes                         | Yes                            |
-| Cloud resources           | Strong                      | Supported                      |
-| OS configuration          | Limited                     | Strong                         |
-| Application configuration | Limited                     | Strong                         |
-| State                     | Uses state                  | Generally agentless/task-based |
-| Agent required            | No                          | No                             |
-| AWS EC2                   | Strong                      | Supported                      |
-| Splunk installation       | Possible                    | Strong                         |
-| Splunk configuration      | Limited                     | Strong                         |
-| Network automation        | Supported                   | Strong                         |
-| Infrastructure lifecycle  | Strong                      | Less focused                   |
-| Configuration drift       | Detects via plan/state      | Depends on playbook design     |
-
-A useful mental model:
-
-```text
-Terraform = Build the infrastructure
-
-Ansible = Configure the infrastructure
-```
-
----
-
-# Terraform vs Manual Deployment
-
-## Manual
-
-```text
-AWS Console
-   |
-   +--> VPC
-   +--> Subnet
-   +--> Security Group
-   +--> EC2
-   +--> IAM
-   |
-   v
-Manual configuration
-```
-
-Problems can include:
-
-```text
-Human error
-Configuration inconsistency
-Poor repeatability
-Difficult auditing
-Slow deployment
-```
-
-## Terraform
-
-```text
-Terraform Code
-      |
-      v
-terraform plan
-      |
-      v
-terraform apply
-      |
-      v
-Consistent Infrastructure
-```
-
----
-
-# Enterprise Terraform Architecture
-
-A mature environment may look like:
-
-```text
-                         Git
-                          |
-                          v
-                  Terraform Repository
-                          |
-                          v
-                    CI/CD Pipeline
-                          |
-                    +-----+-----+
-                    |           |
-                    v           v
-                  Plan       Approval
-                    |           |
-                    +-----+-----+
-                          |
-                          v
-                        Apply
-                          |
-             +------------+------------+
-             |            |            |
-             v            v            v
-            AWS          Azure        Other
-             |
-             v
-        Remote State
-             |
-             v
-      State Management
-```
-
-Additional enterprise controls may include:
-
-```text
-Code Review
-Policy Checks
-Security Scanning
-Secret Management
-Remote State
-State Locking
-Audit Logging
-Approval Workflows
-Drift Detection
-```
-
----
-
-# Best Practices
-
-## 1. Use Version Control
-
-Store Terraform code in Git.
-
-```text
-Git
- |
- +-- Terraform configuration
- +-- Modules
- +-- Documentation
-```
-
----
-
-## 2. Use Modules
-
-Avoid duplicating large amounts of configuration.
-
-Instead of:
-
-```text
-1000 lines repeated
-```
-
-use:
-
-```text
-Reusable Module
-      |
-      +--> Environment 1
-      +--> Environment 2
-      +--> Environment 3
-```
-
----
-
-## 3. Pin Versions
-
-Control Terraform and provider versions.
-
-```hcl
-terraform {
-  required_version = ">= 1.0.0"
-
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 6.0"
-    }
-  }
-}
-```
-
-Choose version constraints appropriate for your environment and test upgrades before applying them broadly.
-
----
-
-## 4. Use Variables
-
-Avoid hardcoding values that should change between environments.
-
-Instead of:
-
-```hcl
-region = "ca-central-1"
-```
-
-use:
-
-```hcl
-region = var.aws_region
-```
-
----
-
-## 5. Use Outputs
-
-Expose important infrastructure information.
-
-```hcl
-output "instance_ip" {
-  value = aws_instance.splunk.public_ip
-}
-```
-
----
-
-## 6. Protect State
-
-Treat state as sensitive infrastructure data.
-
-```text
-Do not commit:
-terraform.tfstate
-terraform.tfstate.*
-```
-
----
-
-## 7. Review Plans
-
-Always understand:
-
-```text
-What will be created?
-What will change?
-What will be destroyed?
-```
-
-before applying infrastructure changes.
-
----
-
-## 8. Use Least Privilege
-
-Terraform credentials should have only the permissions required for the infrastructure they manage.
-
----
-
-## 9. Use Tags
-
-Tag cloud resources consistently.
-
-Example:
-
-```text
-Environment
-Project
-Owner
-ManagedBy
-Role
-Application
-CostCenter
-```
-
----
-
-## 10. Separate Environments
-
-Avoid accidentally deploying development configuration into production.
-
-Possible structure:
-
-```text
-environments/
-├── dev/
-├── test/
-└── prod/
+# Open Terraform console
+terraform console
 ```
 
 ---
@@ -2523,205 +2291,132 @@ environments/
 The easiest way to understand Terraform is:
 
 ```text
+                  TERRAFORM
+                      │
+                      ▼
+                CONFIGURATION
+                      │
+                      ▼
+                     HCL
+                      │
+                      ▼
+                  PROVIDER
+                      │
+                      ▼
+                  CLOUD API
+                      │
+                      ▼
+                INFRASTRUCTURE
+                      │
+                      ▼
+                    STATE
+```
+
+The fundamental infrastructure workflow is:
+
+```text
+DEFINE
+   ↓
+INITIALIZE
+   ↓
+VALIDATE
+   ↓
+PLAN
+   ↓
+APPLY
+   ↓
+MANAGE
+   ↓
+UPDATE / DESTROY
+```
+
+The Terraform execution model can be summarized as:
+
+```text
 Desired State
-     |
-     v
+      ↓
 Terraform Configuration
-     |
-     v
+      ↓
 Terraform Plan
-     |
-     v
-Terraform Apply
-     |
-     v
-Real Infrastructure
-     |
-     v
+      ↓
+Provider
+      ↓
+Cloud API
+      ↓
+Actual Infrastructure
+      ↓
 Terraform State
 ```
 
-Terraform continuously uses these concepts to determine:
+For infrastructure engineering, the key concept is:
+
+> **Define infrastructure as code, review the proposed changes, apply them consistently, and use state to manage the infrastructure lifecycle.**
+
+For an AWS Splunk environment, this becomes:
 
 ```text
-What exists?
-What should exist?
-What changed?
-What needs to change?
+                    TERRAFORM
+                        │
+             ┌──────────┼──────────┐
+             ▼          ▼          ▼
+            VPC      NETWORKING   EC2
+             │          │          │
+             └──────────┼──────────┘
+                        ▼
+                Splunk Infrastructure
+                        │
+          ┌─────────────┼─────────────┐
+          ▼             ▼             ▼
+       INDEXERS     SEARCH HEADS   FORWARDERS
+          │             │             │
+          ▼             ▼             ▼
+        IDX01          SH01          UF01
+        IDX02          SH02          UF02
+        IDX03          SH03          UF02
 ```
 
----
+Terraform is particularly useful when building a distributed Splunk environment because the underlying infrastructure can be defined consistently and recreated from code rather than manually provisioning each server and network component.
 
-# Quick Reference
-
-## Create Infrastructure
-
-```bash
-terraform init
-terraform plan
-terraform apply
-```
-
-## Validate Code
-
-```bash
-terraform fmt
-terraform validate
-```
-
-## Inspect
-
-```bash
-terraform show
-terraform output
-terraform state list
-```
-
-## Destroy
-
-```bash
-terraform destroy
-```
-
-## Debug
-
-```bash
-terraform plan
-terraform show
-terraform state list
-terraform state show RESOURCE
-```
-
----
-
-# Terraform + Splunk Lab Mental Model
-
-For your Splunk AWS project, the architecture can be summarized as:
+A common enterprise workflow is:
 
 ```text
-                         Git
-                          |
-                          v
-                    Terraform Code
-                          |
-                          v
-                    terraform plan
-                          |
-                          v
-                   terraform apply
-                          |
-                          v
-                         AWS
-                          |
-        +-----------------+-----------------+
-        |                 |                 |
-        v                 v                 v
-       VPC              Network          Security
-        |                                  Groups
-        |
-        v
-       EC2
-        |
-        +----------------+----------------+
-        |                |                |
-        v                v                v
-   Splunk Servers     Forwarders       Supporting
-                                       Services
-        |
-        v
-      Ansible
-        |
-        +--> Splunk Installation
-        +--> Indexer Cluster
-        +--> Search Head Cluster
-        +--> Deployment Server
-        +--> SSL
-        +--> Firewall
-        +--> Forwarder Configuration
+                    TERRAFORM
+                        │
+                        ▼
+              Provision Infrastructure
+                        │
+                        ▼
+                 AWS Environment
+                        │
+                        ▼
+                     ANSIBLE
+                        │
+                        ▼
+              Configure Operating System
+                        │
+                        ▼
+                 Install Splunk
+                        │
+                        ▼
+              Configure Splunk Cluster
+                        │
+                        ▼
+                Distributed Splunk
+                  Environment
 ```
 
-This gives you a clear separation:
+This creates a clear separation:
 
 ```text
 Terraform
-    =
+   ↓
 Infrastructure
 
 Ansible
-    =
+   ↓
 Configuration
 
 Splunk
-    =
-Observability / Security Platform
+   ↓
+Application / Observability Platform
 ```
-
----
-
-# Summary
-
-Terraform is an Infrastructure as Code platform that allows infrastructure to be defined, provisioned, and managed through code.
-
-The core concepts to understand are:
-
-```text
-Providers
-Resources
-Data Sources
-Variables
-Locals
-Outputs
-Modules
-State
-Backends
-Dependencies
-Plan
-Apply
-Destroy
-```
-
-For an AWS-based Splunk environment, Terraform can manage:
-
-```text
-VPC
-Subnets
-Security Groups
-EC2
-IAM
-Storage
-Networking
-```
-
-while Ansible can handle:
-
-```text
-Operating System Configuration
-Splunk Installation
-Splunk Configuration
-SSL
-Firewall
-Indexer Cluster
-Search Head Cluster
-Forwarders
-```
-
-The resulting automation architecture is:
-
-```text
-                    Git
-                     |
-          +----------+----------+
-          |                     |
-          v                     v
-      Terraform               Ansible
-          |                     |
-          v                     v
-   AWS Infrastructure      Splunk Configuration
-          |                     |
-          +----------+----------+
-                     |
-                     v
-             Splunk Environment
-```
-
-This Terraform + Ansible separation provides a practical foundation for building repeatable Splunk infrastructure in AWS.
